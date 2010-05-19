@@ -113,17 +113,11 @@ Yes you can.  Your theme's stylesheet is used by the plugin when rendering the s
 == Screenshots ==
 
 1. Plugin Validation Screen.  This is how you connect the plugin to HeyPublisher.com
-
-2. Publication Information configuration screen
-
+2. Publication Information configuration screen.
 3. Submission Form configuration screen.  Here is where you create or select the page in your Wordpress blog that will contain the submission form.
-
 4. Submission Guidelines configuration screen.  If your publication has a page for it's submission guidelines online, select that page here.  
-
 5. Submission Criteria configuration screen. Here is where you will select the specific genres of work you want to accept, and how those genres map to the categories you've created in Wordpress.
-
 6. Miscellaneous configuration screen.  If your publication pays writers for their work, indicate that here.
-
 7. Submissions Management screen.  From this screen you can manage the submissions received by your publication, including rejecting the submission, saving the submission for later review, or accepting the submission for publication.  Clicking on the Author's Name will bring up their bio in preview mode (if available).  Clicking on the title of the submission will allow you to 'preview' the submission.
 
 == Changelog ==
