@@ -1,12 +1,6 @@
 <?php
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('HeyPublisher: Illegal Page Call!'); }
 
-add_action('init', 'heypub_options_init');
-// capture when a submission is published
-add_action('publish_post','heypub_publish_post');
-// capture when a submission is deleted from the posts
-add_action('delete_post','heypub_reject_post');
-
 /* @todo filters: form ids, posts with edits, with no edits, by user, by IP  */
 
 // Show the moderation menu
@@ -118,7 +112,7 @@ if(!empty($subs)) {
       }
 ?>        
       </td>
-      <td><?php printf('<a href="mailto:%s?subject=Your+submission+to+%s">%s</a>',$hash->author->email,get_bloginfo('name'),$hash->author->email); ?></td>
+      <td><?php printf('<a href="mailto:%s?subject=Your%%20submission%%20to%%20%s">%s</a>',$hash->author->email,get_bloginfo('name'),$hash->author->email); ?></td>
       <td><?php printf("%s", $hash->submission_date); ?></td>
       <td><?php printf("%s", $hp_xml->normalize_submission_status($hash->status)); ?></td>
     </tr>
@@ -183,7 +177,6 @@ function heypub_show_submission($id) {
   if ($hp_xml->submission_action($id,'read')) {
     $sub = $hp_xml->get_submission_by_id($id);
     $form_post_url = sprintf('%s/%s',get_bloginfo('wpurl'),'wp-admin/admin.php?page=heypub_show_menu_submissions');
-
 ?>    
   <div class="wrap">
     <br/>
@@ -192,7 +185,7 @@ function heypub_show_submission($id) {
       <?php heypub_display_page_title('Preview Submission: ' . $sub->title); ?>
       <div id="hey-content">
         <h3><?php printf('%s', $sub->category); ?> by <?php printf("%s %s", $sub->author->first_name, $sub->author->last_name); ?> 
-        (<?php printf('<a href="mailto:%s?subject=Your+submission+to+%s">%s</a>',$sub->author->email,get_bloginfo('name'),$sub->author->email); ?>)</h3>
+        (<?php printf('<a href="mailto:%s?subject=Your%%20submission%%20to%%20%s">%s</a>',$sub->author->email,get_bloginfo('name'),$sub->author->email); ?>)</h3>
         <div id='heypub_submission_body'>
           <?php printf('%s',$sub->body); ?>
         </div>
@@ -239,9 +232,7 @@ function heypub_read_submission($req) {
 function heypub_get_post_id_by_submission_id($id) {
   global $wpdb;
   // $id is the HP post id
-  $sql = sprintf("SELECT $wpdb->postmeta.post_id FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = '%s' AND $wpdb->postmeta.meta_value = '%s'",
-    HEYPUB_POST_META_KEY_SUB_ID, $id);
-  $post_id = $wpdb->get_var($wpdb->prepare($sql));
+  $post_id = $wpdb->get_var($wpdb->prepare("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = %s AND meta_value = %s", HEYPUB_POST_META_KEY_SUB_ID,$id));
   if ($post_id) { return $post_id; }
   return false;
 }
@@ -250,9 +241,7 @@ function heypub_get_post_id_by_submission_id($id) {
 function heypub_get_submission_id_by_post_id($post_id) {
   global $wpdb;
   // $id is the HP post id
-  $sql = sprintf("SELECT $wpdb->postmeta.meta_value FROM $wpdb->postmeta WHERE $wpdb->postmeta.meta_key = '%s' AND $wpdb->postmeta.post_id = '%s'",
-    HEYPUB_POST_META_KEY_SUB_ID, $post_id);
-  $hp_id = $wpdb->get_var($wpdb->prepare($sql));
+  $hp_id = $wpdb->get_var($wpdb->prepare("SELECT meta_value FROM $wpdb->postmeta WHERE meta_key = %s AND post_id = %s", HEYPUB_POST_META_KEY_SUB_ID, $post_id));
   if ($hp_id) { 
     return $hp_id;
   }
@@ -300,22 +289,29 @@ function heypub_create_or_update_author($a) {
   if ($a) {
     // does this author already exist?  If so, find them.  Username = user->email
     $user_name = $a->email;
-    $user_id = username_exists( $user_name );
+    // fetch the user id by username and/or email address
+    $user_id = heypub_get_author_id_by_email( $user_name );
     if ( !$user_id ) {
     	$random_password = wp_generate_password( 12, false );
     	$user_id = wp_create_user( $user_name, $random_password, $user_name );
     } 
     // update the user's bio, too - if we have it.
-  	update_usermeta($user_id,'description',sprintf("%s",$a->bio));
+  	heypub_update_author_info($user_id,'description',sprintf("%s",$a->bio));
     //  right now - this is the only unique key we will share with plugins.  OIDs coming soon...
-  	update_usermeta($user_id,HEYPUB_USER_META_KEY_AUTHOR_ID,sprintf("%s",$a->email));
+  	heypub_update_author_info($user_id,HEYPUB_USER_META_KEY_AUTHOR_ID,sprintf("%s",$a->email));
+    // And the user's first/last name if we have it
+  	if ($a->full_name) {
+  	  wp_update_user( array ('ID' => $user_id, 'display_name' => $a->full_name) ) ;
+    	heypub_update_author_info($user_id,'first_name',sprintf("%s",$a->first_name));
+    	heypub_update_author_info($user_id,'last_name',sprintf("%s",$a->last_name));
+    }
   }
   return $user_id;
 }
 
 function heypub_create_or_update_post($user_id,$status,$sub) {
   global $hp_xml;
-  $post_id = heypub_get_post_id_by_title($sub->title,$user_id) ;
+  $post_id = heypub_get_post_id_by_title("$sub->title",$user_id) ;
   $category = 1;  // the 'uncategorized' category
   $map = $hp_xml->get_category_mapping();
   // printf("<pre>Sub object looks like : %s</pre>",print_r($sub,1));
@@ -342,9 +338,28 @@ function heypub_create_or_update_post($user_id,$status,$sub) {
 
 function heypub_get_post_id_by_title($title,$user_id){
   global $wpdb;
-  $sql = "SELECT $wpdb->posts.ID FROM $wpdb->posts WHERE $wpdb->posts.post_title = '$title' AND $wpdb->posts.post_author = '$user_id'";
-  $post_id = $wpdb->get_var($wpdb->prepare($sql));
+  $post_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_author = %s",$title,$user_id));
   return $post_id;
+}
+
+function heypub_get_author_id_by_email($email) {
+  global $wpdb;
+  $user_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->users WHERE user_email= %s","$email"));
+  return $user_id;
+}
+
+function heypub_update_author_info($uid,$key,$val) {
+  global $wp_version;
+  // The function changed in WP 3.0!!
+  // Conver to an int
+  $test = $wp_version+=0;
+  if ($val) {
+    if ($test >= 3) {
+      update_user_meta($uid,$key,"$val");
+    } else {
+      update_usermeta($uid,$key,"$val");
+    }	
+  }
 }
 
 // Accept Handler - these posts may or may not be in the db already
