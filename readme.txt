@@ -1,10 +1,10 @@
 === Plugin Name ===
 Contributors: Richard Luck, Brad Tayan, Chris Habgood, Loudlever. 
-Donate link: https://www.literary-arts.org/contribute/
-Tags: anonymous, posting, editing, post, form, submit, submissions, unregistered users, custom posting interface, plugin, slush pile, HeyPublisher, Loudlever
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZEXMMPFCRXQRC
+Tags: anonymous, posting, submit, submissions, unregistered users, custom posting interface, plugin, slush pile, HeyPublisher, Loudlever
 Requires at least: 2.8.6
-Tested up to: 2.9.2
-Stable Tag: 1.0.1
+Tested up to: 3.0
+Stable Tag: 1.1.0
 
 This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.
 
@@ -120,7 +120,14 @@ Yes you can.  Your theme's stylesheet is used by the plugin when rendering the s
 6. Miscellaneous configuration screen.  If your publication pays writers for their work, indicate that here.
 7. Submissions Management screen.  From this screen you can manage the submissions received by your publication, including rejecting the submission, saving the submission for later review, or accepting the submission for publication.  Clicking on the Author's Name will bring up their bio in preview mode (if available).  Clicking on the title of the submission will allow you to 'preview' the submission.
 
+
 == Changelog ==
+
+= 1.0.1 =
+
+* Fixed an issue where the custom javascript in this plugin could possibly conflict with Admin Themes that also used javascript.
+* Fixed code related to User<->Post mapping so that the plugin uses the new functions introduced in Wordpress 3.0
+* Removed the inclusion of the custom stylesheet on the Submission Form page, as it was conflicting with some themes.  Now, the width/height of the IFRAME in which the submission form displays is styled inline.  If you want to override the size or style of this IFRAME reset the attributes for `#heypub_submission_iframe` in your stylesheet. 
 
 = 1.0.1 =
 
@@ -128,8 +135,14 @@ Yes you can.  Your theme's stylesheet is used by the plugin when rendering the s
 
 == Upgrade Notice ==
 
+= 1.1.0 =
+
+* Upgrade to fix possible conflicts with javascript you may experience if your Admin Theme also uses javascript.
+
+* Released : 2010-07-22
+
 = 1.0.1 =
 
-* Initial Release
+* Initial Release : 2010-04-29
 
 

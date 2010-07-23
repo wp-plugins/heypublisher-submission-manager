@@ -1,25 +1,6 @@
 <?php
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('HeyPublisher: Illegal Page Call!'); }
 
-add_action('init', 'heypub_options_init');
-add_action( 'admin_head', 'heypub_options_admin_head' );
-
-// if(current_user_can('manage_options')) {
-    // phpinfo();
-// }
-
-
-function heypub_options_admin_head() {
-?>
-    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
-<?php    
-}
-
-
-function heypub_options_init() {
-  wp_enqueue_script('heypublisher', WP_PLUGIN_URL . '/heypublisher-submission-manager/include/js/heypublisher.js',array('prototype')); 
-}
-
 function heypub_show_menu_options() {
   global $hp_xml;
   //   Possibly process form post

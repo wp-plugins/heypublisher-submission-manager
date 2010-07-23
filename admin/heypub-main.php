@@ -5,26 +5,6 @@
 
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('HeyPublisher: Illegal Page Call!'); }
 
-/*
--------------------------------------------------------------------------------
-Overview Page - and the hook to the Dashboard
--------------------------------------------------------------------------------
-*/
-add_action('admin_head', 'heypub_admin_main');
-add_action('right_now_table_end','heypub_dashboard');
-// add_action('admin_notices', 'heypub_upgrade_notice');  // Nothing to do here yet
-
-
-
-function heypub_admin_main() {
-   global $wp_version;
-   if (preg_match('/page=heypub/',$_SERVER['REQUEST_URI'])) {
-?>
-<!-- HeyPublisher Header -->
-  <link rel='stylesheet' href='<?php echo HEY_BASE_URL; ?>include/css/heypublisher.css' type='text/css' />
-<?php
-   }
-}
 
 /**
 * Helper to consistently get the page title and logo displayed.

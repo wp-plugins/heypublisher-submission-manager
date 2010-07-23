@@ -35,8 +35,6 @@ Author URI: http://www.loudlever.com
 
 */
 
-add_action('admin_menu', 'heypub_menu_add');
-
 /* 
  Older versions of PHP may not define DIRECTORY_SEPARATOR so define it here,
  just in case.
@@ -58,20 +56,20 @@ define('HEY_DIR', dirname(plugin_basename(__FILE__)));
 // Configs specific to the plugin
 // Build Number (must be a integer)
 define('HEY_BASE_URL', get_option('siteurl').'/wp-content/plugins/'.HEY_DIR.'/');
-define("HEYPUB_PLUGIN_BUILD_NUMBER", "22");  // This controls whether or not we get upgrade prompt
-define("HEYPUB_PLUGIN_BUILD_DATE", "2010-04-09");  
+define("HEYPUB_PLUGIN_BUILD_NUMBER", "28");  // This controls whether or not we get upgrade prompt
+define("HEYPUB_PLUGIN_BUILD_DATE", "2010-07-22");  
 // Version Number (can be text)
-define("HEYPUB_PLUGIN_VERSION", "1.0.1");
+define("HEYPUB_PLUGIN_VERSION", "1.1.0");
 // Path to the version of Snoopy we're using - included in this package
 // Relative to the 
-define('HEYPUB_PLUGIN_ERROR_CONTACT','Please contact <a href="mailto:wordpress@loudlever.com?subject=plugin+error">wordpress@loudlever.com</a> to report this error');
+define('HEYPUB_PLUGIN_ERROR_CONTACT','Please contact <a href="mailto:wordpress@loudlever.com?subject=plugin%20error">wordpress@loudlever.com</a> to report this error');
 define('HEYPUB_PLUGIN_NOT_AUTHENTICATED_ACTION','heypub_show_menu_options');
 
 define('HEYPUB_PLUGIN_FULLPATH', WP_PLUGIN_DIR.DIRECTORY_SEPARATOR.HEY_DIR.DIRECTORY_SEPARATOR);
 
 // How to connect to the service
 // define('HEYPUB_FEEDBACK_URL_VALUE','http://getsatisfaction.com/hey');      
-define('HEYPUB_FEEDBACK_EMAIL_VALUE','wordpress@loudlever.com?subject=HeyPublisher+Wordpress+Plugin');
+define('HEYPUB_FEEDBACK_EMAIL_VALUE','wordpress@loudlever.com?subject=HeyPublisher%20Wordpress%20Plugin');
 define('HEYPUB_SVC_URL_STYLE_GUIDE','http://www.loudlever.com/docs/plugins/wordpress/style_guide');     # designates the URL of the style guide
 define('HEYPUB_SVC_URL_BASE','http://heypublisher.com/api/v1');                 # designates the base URL and version of API
 define('HEYPUB_SVC_URL_SUBMIT_FORM','submissions');           
@@ -137,24 +135,8 @@ define('HEYPUB_OPT_SUBMISSION_GUIDE_ID','_heypub_opt_submission_guide_id');
 define('HEYPUB_USER_META_KEY_AUTHOR_ID','_heypub_user_meta_key_author_id');
 define('HEYPUB_POST_META_KEY_SUB_ID','_heypub_post_meta_key_sub_id');
 
-/**
-*  Configure the Admin Menu
-*  Invoke the hook, sending function name
-*/
-function heypub_menu_add(){
-  global $hp_xml;
-    add_menu_page('HeyPublisher','HeyPublisher', 8, HEY_DIR, 'heypub_menu_main', HEY_BASE_URL.'images/heypub-icon.png');
-
-  if ($hp_xml->is_validated) {
-      // Submission Queue
-      add_submenu_page(HEY_DIR , 'HeyPublisher Submissions', 'Submissions', 'edit_others_posts', 'heypub_show_menu_submissions', 'heypub_show_menu_submissions');
-  }
-    // Configure Options
-    add_submenu_page( HEY_DIR , 'Configure HeyPublisher', 'Plugin Options', 'manage_options', 'heypub_show_menu_options', 'heypub_show_menu_options');
-    // Uninstall Plugin
-    add_submenu_page( HEY_DIR , 'Uninstall HeyPublisher', 'Uninstall Plugin', 'manage_options', 'heypub_menu_uninstall', 'heypub_menu_uninstall');
-
-}
+// Initiate the callbacks
+add_action('admin_menu', 'RegisterHeyPublisherAdminMenu');
 
 /**
 * Load all of the plugin files
@@ -172,6 +154,47 @@ require_once(HEYPUB_PLUGIN_FULLPATH.'admin'.DIRECTORY_SEPARATOR.'heypub-uninstal
 
 // required for managing submissions
 require_once(HEYPUB_PLUGIN_FULLPATH.'admin'.DIRECTORY_SEPARATOR.'heypub-submissions.php');
+
+
+/**
+*  Configure and Register the Admin Menu
+*  Invoke the hook, sending function name
+*/
+function RegisterHeyPublisherAdminMenu(){
+  global $hp_xml;
+    $admin_menu = add_menu_page('HeyPublisher','HeyPublisher', 8, HEY_DIR, 'heypub_menu_main', HEY_BASE_URL.'images/heypub-icon.png');
+    add_action("admin_print_styles-$admin_menu", 'HeyPublisherAdminHeader' );
+
+  if ($hp_xml->is_validated) {
+      // Submission Queue
+      $admin_sub = add_submenu_page(HEY_DIR , 'HeyPublisher Submissions', 'Submissions', 'edit_others_posts', 'heypub_show_menu_submissions', 'heypub_show_menu_submissions');
+      add_action("admin_print_styles-$admin_sub", 'HeyPublisherAdminHeader' );
+      add_action("admin_print_scripts-$admin_sub", 'HeyPublisherAdminInit');
+      // capture when a submission is published
+      add_action('publish_post','heypub_publish_post');
+      // capture when a submission is deleted from the posts
+      add_action('delete_post','heypub_reject_post');
+  }
+    // Configure Options
+    $admin_opts = add_submenu_page( HEY_DIR , 'Configure HeyPublisher', 'Plugin Options', 'manage_options', 'heypub_show_menu_options', 'heypub_show_menu_options');
+    add_action("admin_print_styles-$admin_opts", 'HeyPublisherAdminHeader' );
+    add_action("admin_print_scripts-$admin_opts", 'HeyPublisherAdminInit');
+
+    // Uninstall Plugin
+    $admin_unin = add_submenu_page( HEY_DIR , 'Uninstall HeyPublisher', 'Uninstall Plugin', 'manage_options', 'heypub_menu_uninstall', 'heypub_menu_uninstall');
+    add_action("admin_print_styles-$admin_unin", 'HeyPublisherAdminHeader' );
+
+}
+
+function HeyPublisherAdminHeader() {
+?>
+  <!-- HeyPublisher Header -->
+  <link rel='stylesheet' href='<?php echo HEY_BASE_URL; ?>include/css/heypublisher.css' type='text/css' />
+<?php  
+}
+function HeyPublisherAdminInit() {
+  wp_enqueue_script('heypublisher', WP_PLUGIN_URL . '/heypublisher-submission-manager/include/js/heypublisher.js',array('prototype')); 
+}
 
 /*
 -------------------------------------------------------------------------------
