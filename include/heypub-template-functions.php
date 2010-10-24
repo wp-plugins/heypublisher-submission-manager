@@ -17,9 +17,10 @@ function heypub_display_form($content='') {
 }
 
 function heypub_display_submission_form() {
-  if (get_option(HEYPUB_OPT_ACCEPTING_SUBS)) {
-    $src = get_permalink(get_option(HEYPUB_OPT_SUBMISSION_PAGE_ID));
-    $url = sprintf("%s/%s/submit/%s",HEYPUB_SVC_URL_BASE, HEYPUB_SVC_URL_SUBMIT_FORM, get_option(HEYPUB_OPT_SVC_PUBLISHER_OID));
+  global $hp_xml;
+  if ($hp_xml->get_config_option('accepting_subs')) {
+    $src = get_permalink($hp_xml->get_config_option('sub_page_id'));
+    $url = sprintf("%s/%s/submit/%s",HEYPUB_SVC_URL_BASE, HEYPUB_SVC_URL_SUBMIT_FORM, $hp_xml->get_install_option('publisher_oid'));
     // $style = sprintf("<link rel='stylesheet' href='%sinclude/css/heypublisher.css' type='text/css' />", HEY_BASE_URL);
     $css = get_bloginfo('stylesheet_url');
     $css = urlencode($css);
