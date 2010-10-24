@@ -10,22 +10,37 @@ if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('HeyP
 * Helper to consistently get the page title and logo displayed.
 * This function prints to the screen.
 */
-function heypub_display_page_title($title) {
+function heypub_display_page_title($title,$supress_logo=false) {
+  global $hp_xml;
 ?>  
   <h2><?php echo $title; ?></h2>
-  <div id='logo'><a href='http://www.heypublisher.com' target='_new' title='Visit HeyPublisher on the Web'><img src='<?php echo HEY_BASE_URL.'/images/heypub-logo.png'; ?>' border='0'><br/>Visit HeyPublisher.com</a><br/>
-    <a href='mailto:<?php echo HEYPUB_FEEDBACK_EMAIL_VALUE; ?>'>Email Us</a></div>
 <?php  
+  if (!$supress_logo) {
+    heypub_display_page_logo();
+  }
 }
 
+function heypub_display_page_logo() {
+  global $hp_xml;
+?>
+    <div id='heypub_logo'><a href='http://heypublisher.com' target='_blank' title='Visit HeyPublisher.com'><img src='<?php echo HEY_BASE_URL.'/images/logo.jpg'; ?>' border='0'></a><br/>
+      <a href='mailto:<?php echo HEYPUB_FEEDBACK_EMAIL_VALUE; ?>'>Questions?  Email Us!</a>
+<?php
+      $seo = $hp_xml->get_config_option('seo_url');
+      if ($seo) {
+?>      
+      <hr>
+      <b><a target=_blank href="<?php echo $seo; ?>">See Your Site in Our Database</a></b>
+<?php 
+    }
+?>
+      </div>
+<?php  
+  
+}
 // Show the page
-//
 function heypub_menu_main()  {
 	global $wpdb,$wp_roles, $hp_xml;
-
-    // Initilise the plugin for the first time here. This gets called when you click the HeyPublisher link.
-    // Doing it here means you can delete all the options!
-    heypub_init();
 
 	// get feed_messages
   require_once(ABSPATH . WPINC . '/rss.php');
@@ -45,7 +60,6 @@ function heypub_menu_main()  {
       <p>HeyPublisher is the premier online site for writers to discover new writing markets.  By using this plugin you join a large and well-respected group of online publishers.  Best of all, you help ensure copyright protection for both the author and your site, as HeyPublisher provides independent 3rd party auditing of all submission transactions.</p>
       <p>As the publisher of <b><i><?php bloginfo('name'); ?></i></b> you control:
       <ul class='heypub-list'>
-        <li>the reading periods during which you will accept submissions</li>
         <li>the genres of work you will accept</li>
         <li>whether or not to accept simultaneous submissions</li>
         <li>whether or not to accept previously published works</li>
@@ -54,17 +68,20 @@ function heypub_menu_main()  {
       </p>
 
   	  <h3>Plugin Statistics</h3>
-  <table class='list'>
+  <table class="widefat post fixed">
+  <thead>
     <tr>
       <th>Plugin Version</th>
       <th>Build #</th>
       <th>Build Date</th>
       <th>Plugin Validated</th>
     </tr>
+  </thead>
+  <tbody>
     <tr>
       <td><?php echo HEYPUB_PLUGIN_VERSION; ?></td>
-      <td><?php echo get_option(HEYPUB_OPT_PLUGIN_VERSION_CURRENT); ?></td>
-      <td><?php echo get_option(HEYPUB_OPT_PLUGIN_VERSION_DATE); ?></td>
+      <td><?php echo $hp_xml->get_install_option('version_current'); ?></td>
+      <td><?php echo $hp_xml->get_install_option('version_current_date'); ?></td>
       <td>
 <?php 
   if (!$hp_xml->is_validated) {
@@ -75,10 +92,78 @@ function heypub_menu_main()  {
 ?>
       </td>
     </tr>
+    </tbody>
   </table>
+<?php
+if ($hp_xml->is_validated) {
+  // fetch the publisher info and update the local db with latest stats
+  $p = $hp_xml->get_publisher_info();
+  if ($p) {
+    $hp_xml->set_config_option('seo_url',$p[seo_url]);
+    $hp_xml->set_config_option('homepage_first_validated_at',$p[homepage_first_validated_at]);
+    $hp_xml->set_config_option('homepage_last_validated_at',$p[homepage_last_validated_at]);
+    $hp_xml->set_config_option('guide_first_validated_at',$p[guide_first_validated_at]);
+    $hp_xml->set_config_option('guide_last_validated_at',$p[guide_last_validated_at]);
+    // we won't store total subs and open subs
+    
+    // xml.avg_response_days(-1)   # we'll calculate this later
+    // xml.avg_acceptance_rate(-1) # we'll calculate this later
+    // xml.writer_comments(@pub.comments.count(:include => [:comment_type],:conditions=>["comment_types.name = 'public'"]))
+    // xml.writer_favorites(@pub.user_publishers.count)
+
+  }
+  //  now print it out:
+?>  
+<h3>HeyPublisher Statistics for <i><?php bloginfo('name'); ?></i></h3>
+<table class="widefat post fixed">
+<thead>
+  <tr>
+    <th>Homepage Last Indexed</th>
+    <th>Guidelines Last Indexed</th>
+    <th>Total Subs Received</th>
+    <th>Total Open Subs</th>
+    <th># Comments</th>
+    <th># Favorites</th>
+<?php
+    if ($p[avg_response_days] > 0) {
+?>
+    <th>AVG Resp. Time</th>
+<?php 
+    }
+    if ($p[avg_acceptance_rate] > 0) {
+?>
+    <th>AVG Accept. Rate</th>
+<?php 
+    }
+?>    
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><?php echo $hp_xml->get_config_option('homepage_last_validated_at'); ?></td>
+    <td><?php echo $hp_xml->get_config_option('guide_last_validated_at'); ?></td>
+    <td><?php echo $p['total_subs']; ?></td>
+    <td><?php echo $p['total_open_subs']; ?></td>
+    <td><?php echo $p['writer_comments']; ?></td>
+    <td><?php echo $p['writer_favorites']; ?></td>
+<?php
+    if ($p[avg_response_days] > 0) {
+      printf("<td>%s days</td>",$p[avg_response_days]);
+    }
+    if ($p[avg_acceptance_rate] > 0) {
+      printf("<td>%s %%</td>",$p[avg_acceptance_rate]*100);
+    }
+?>
+  </tr>
+</tbody>
+</table>  
+<?php  
+}
+?>    
   
   <h3>How to Control the Style of the Submission Form</h3>
-  <p>This plugin uses your current theme's <!-- (<i><?php echo get_current_theme(); ?></i>) --> stylesheet to control the layout of the submission form.  If you want to customize how the submission form looks, please <a href="<?php echo HEYPUB_SVC_URL_STYLE_GUIDE; ?>" target=_new title='Click to open the style guide in a new window'>read the style guide</a>.</p> 
+  <p>This plugin uses your current theme's <!-- (<i><?php echo get_current_theme(); ?></i>) --> stylesheet to control the layout of the submission form.</p>
+  <p>If you want to customize how the submission form looks, please <a href="<?php echo HEYPUB_SVC_URL_STYLE_GUIDE; ?>" target=_new title='Click to open the style guide in a new window'>read the style guide</a>.</p> 
   
   </div>
 <?php
@@ -119,7 +204,8 @@ function heypub_get_authentication_url($page=false) {
 * Initialize the upgrade of the plugin
 */
 function heypub_upgrade_notice() {
-    $ver_cur = get_option(HEYPUB_OPT_PLUGIN_VERSION_CURRENT);
+  global $hp_xml;
+    $ver_cur = $hp_xml->get_install_option('version_current');
     if($ver_cur != false && $ver_cur != HEYPUB_PLUGIN_BUILD_NUMBER) { 
 ?>
         <div id="message" class="updated" ><p>You've recently upgraded HeyPublisher Submission Manager. To finalise the upgrade process, <a href="admin.php?page=heypub_show_menu_submissions">please visit the plugin configuration page</a>.</p></div>
