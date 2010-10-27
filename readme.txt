@@ -1,10 +1,10 @@
 === Plugin Name ===
-Contributors: Richard Luck, Brad Tayan, Chris Habgood, Loudlever. 
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZEXMMPFCRXQRC
-Tags: anonymous, posting, submit, submissions, unregistered users, custom posting interface, plugin, slush pile, HeyPublisher, Loudlever
+Contributors: Loudlever. 
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6XSRBYF4B3RH6
+Tags: anonymous, post, submit, submission, unregistered users, custom post interface, plugin, slushpile, HeyPublisher, Loudlever
 Requires at least: 2.8.6
 Tested up to: 3.0
-Stable Tag: 1.1.0
+Stable Tag: 1.2.2
 
 This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.
 
@@ -40,9 +40,9 @@ Spam submissions are a virtual impossibility.  Since all writers must have valid
 
 == About Us ==
 
-Developed by the fine folks at Loudlever, Inc., HeyPublisher is the premier online tool for writers to discover publishers and new writing markets.  
+Developed by the fine folks at [Loudlever, Inc.](http://www.loudlever.com), HeyPublisher is the premier online tool for writers to discover publishers and new writing markets.  
 
-At [Loudlever, Inc.](http://www.loudlever.com) we believe writers and publishers should be well-matched — compatible in a long-term relationship.  This is why we're applying the same computer algorithms used by online dating sites to our tools to ensure writers and publishers are perfectly paired.
+At Loudlever, Inc. we believe writers and publishers should be well-matched — compatible in a long-term relationship.  This is why we're applying the same computer algorithms used by online dating sites to our tools to ensure writers and publishers are perfectly paired.
 
 When writers and publishers are perfectly matched, magic can happen.  Writers are more creative.  Publishers are able to get issues out faster.
 
@@ -50,13 +50,15 @@ We are Loudlever.  Creativity.  Accelerated.
 
 == Installation ==
 
+**Install Plugin**
+
 * Download the zip file and save it in your `wordpress/wp-content/plugins` directory.
 
 * Extract the files to a subdirectory called `heypublisher-submission-manager`.
 
 * Active the plugin via the usual Wordpress plugin menu.  
 
-Once activated you will need to 'validate' the plugin with the HeyPublisher webservice.  To do this, go to the "HeyPublisher Plugin Options" administration screen.  (See Screenshot 1)
+Once activated you will need to 'validate' the plugin with the HeyPublisher webservice.  To do this, click on the HeyPublisher link in the newly created side-nav box and follow the on-screen instructions.
 
 **Validate Plugin**
 
@@ -70,21 +72,23 @@ If your publication already exists in the [HeyPublisher.com](http://heypublisher
 * Your email address
 * A password
 
-If you already have a personal account with HeyPublisher.com, enter the email address and password you use to login.  If you do not already have an account, enter the email address and password you would like to use.  This username and password will be used if you ever need to reinstall or upgrade the plugin.  This information is also used to ensure that _ONLY YOU_ can modify your publication's listing in the HeyPublisher database.
+If you already have an account with HeyPublisher.com, enter the email address and password you use to login.  If you do not already have an account, enter the email address and password you would like to use.  This username and password will be used if you ever need to reinstall or upgrade the plugin.  This information is also used to ensure that **_ONLY YOU_** can modify your publication's listing in the HeyPublisher database.
 
 **Configure Plugin**
 
 After the plugin has been validated, you can configure it to meet your submission requirements.  All information entered on this screen is used by HeyPublisher to help filter the submissions you receive.  The configuration sections are:
 
-* Publication Information: this includes the name, URL, editor, and physical mailing address of your publication. (Screenshot 2)
+* **Publication Information:** this includes the name, URL, editor, and physical mailing address of your publication. (Screenshot 2)
 
-* Submission Form: select or create the page that will contain your submission form on your website. (Screenshot 3)
+* **Submission Form:** select or create the page that will contain your submission form on your website. (Screenshot 3)
 
-* Submission Guidelines: select the page that contains your submission guidelines (if applicable). (Screenshot 4)
+* **Submission Guidelines:** select the page that contains your submission guidelines (if applicable). (Screenshot 4)
 
-* Submission Criteria: select which genres of work you will accept - and how those should map to your internal categories when you "accept" a work for publication.  Additionally, you can select whether or not to accept simultaneous submissions and multiple submissions. (Screenshot 5)
+* **Submission Criteria:** select which genres of work you will accept - and how those should map to your internal categories when you "accept" a work for publication.  Additionally, you can select whether or not to accept simultaneous submissions and multiple submissions. (Screenshot 5)
 
-* Miscellaneous : indicate whether or not your publication pays writers for their work.
+* **Payment Options :** indicate whether or not your publication pays writers for their work.
+
+* **Miscellaneous :** configuration to help you clean up bad HTML formatting.
 
 Once you have made the appropriate configurations, click the "Save" button.  
 
@@ -108,25 +112,51 @@ If you do not allow simultaneous submissions, this puts a 'lock' on the work pre
 Yes - absolutely.  HeyPublisher indexes and archives all publisher submission guidelines, making them immediately searchable by writers around the world.  It's important as a publisher to be very clear with writers beforehand about what you are looking for in terms of genre, length, quality and content.
 
 * **Can we style the submission form to better align with our look and feel?**   
-Yes you can.  Your theme's stylesheet is used by the plugin when rendering the submission form.  If you want to change the look of an element on the submission form, simply declare a style for that element in your theme's stylesheet and it will take effect immediately.
+Yes you can.  Your theme's stylesheet is used by the plugin when rendering the submission form.  If you want to change the look of an element on the submission form, simply declare a style for that element in your theme's stylesheet and it will take effect immediately.  Read the [online style guide](http://www.loudlever.com/docs/plugins/wordpress/style_guide) for more detailed information.
+
+* **Can we change the content of the emails sent to writers regarding their submissions?**   
+Yes, as of version 1.2.0 you can define custom response templates that contain whatever message you want to send to your writers.  These emails are automatically whenever you reject, accept, or save a submission for later review.  An email is also sent the first time an editor reads a new submission.  Click on 'Response Templates' in the side-bar and follow the on-screen instructions.
 
 == Screenshots ==
 
-1. Plugin Validation Screen.  This is how you connect the plugin to HeyPublisher.com
-2. Publication Information configuration screen.
-3. Submission Form configuration screen.  Here is where you create or select the page in your Wordpress blog that will contain the submission form.
-4. Submission Guidelines configuration screen.  If your publication has a page for it's submission guidelines online, select that page here.  
-5. Submission Criteria configuration screen. Here is where you will select the specific genres of work you want to accept, and how those genres map to the categories you've created in Wordpress.
-6. Miscellaneous configuration screen.  If your publication pays writers for their work, indicate that here.
-7. Submissions Management screen.  From this screen you can manage the submissions received by your publication, including rejecting the submission, saving the submission for later review, or accepting the submission for publication.  Clicking on the Author's Name will bring up their bio in preview mode (if available).  Clicking on the title of the submission will allow you to 'preview' the submission.
-
+1. Plugin Validation Screen.  This is how you connect the plugin to HeyPublisher.com.  Just input the username and password you want to create (if you don't already have a HeyPublisher account).
+2. Publication Information configuration screen.  This is how you want your publication to appear within HeyPublisher's database.
+3. Submission Form Configuration.  Here is where you create (or select) the page in your Wordpress blog that will contain the submission form.  If the page doesn't already exist, click the link and the plugin will create it for you.
+4. Submission Guidelines Configuration.  If your publication has a page for it's submission guidelines, select that page here.  This page will be indexed by HeyPublisher and will be promoted to our community of writers.
+5. Submission Criteria Configuration. Here is where you will select the specific HeyPublisher genres of work you want to accept, and how those genres map to the categories you've created in Wordpress.
+6. Payment Configuration.  If your publication pays writers for their work, indicate that here.  At this time, this is informational only.
+7. Submissions Summary.  From this screen you can view and manage the submissions received by your publication, including rejecting the submission, saving the submission for later review, or accepting the submission for publication.  Clicking on the Author's Name will bring up their bio in preview mode (if available).  Clicking on the title of the submission will allow you to 'preview' the submission.
+8. Miscellaneous Configuration.  Should be self-explanatory.
+9. Submission Status.  When 'previewing' a submission, the submission status side-bar will give you quick stats on the submission, including how many days it's been in your slushpile, and whether or not the work has been submitted to (or published by) any other publishers.
+10. Response Template Summary.  Get a quick view of the custom responses you are sending to writers at each stage of the submission process.
+11. Response Template Add/Edit Screen.  Add new (or edit existing) response templates. 
+12. Plugin and Publisher Statistics screen.  Gives you a quick snapshot of total submissions, pending submissions, and how many writers have made comments about your publication on HeyPublisher.com
+13. Dashboard Summary.  A summary of total submissions received and how many are pending review has been added to the Dashboard, providing you with a quick snapshot.
 
 == Changelog ==
 
-= 1.0.1 =
+= 1.2.2 =
+
+* Fixes two typos, including an invalid URL.
+
+= 1.2.1 =
+
+* Added Submission Summary counts to the Dashboard and to the main plugin information screen.  Introduces metrics on accept vs. reject percentage.
+
+= 1.2.0 =
+
+* Added Custom Response Templates; the ability to customize the emails that are sent to your writers during each stage of the submission review process.
+
+* Added summary submission statistics to the plugin 'home' page
+
+* Added detailed statistics on the submission preview page, informing publisher if work is outstanding with another publisher (or has been previously published).
+
+= 1.1.0 =
 
 * Fixed an issue where the custom javascript in this plugin could possibly conflict with Admin Themes that also used javascript.
+
 * Fixed code related to User<->Post mapping so that the plugin uses the new functions introduced in Wordpress 3.0
+
 * Removed the inclusion of the custom stylesheet on the Submission Form page, as it was conflicting with some themes.  Now, the width/height of the IFRAME in which the submission form displays is styled inline.  If you want to override the size or style of this IFRAME reset the attributes for `#heypub_submission_iframe` in your stylesheet. 
 
 = 1.0.1 =
@@ -134,6 +164,18 @@ Yes you can.  Your theme's stylesheet is used by the plugin when rendering the s
 * Initial release of HeyPublisher Submission Manager Plugin
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+
+* See Changelog for added functionality.  No bug fixes.
+
+* Released : 2010-10-27
+
+= 1.2.0 =
+
+* See Changelog for added functionality.  No bug fixes.
+
+* Released : 2010-10-23
 
 = 1.1.0 =
 
