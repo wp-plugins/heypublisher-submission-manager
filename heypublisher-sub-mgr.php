@@ -67,9 +67,9 @@ define("HEYPUB_PLUGIN_BUILD_DATE", "2010-10-23");
 define("HEYPUB_PLUGIN_VERSION", "1.2.1");
 
 # Base domain 
-// define('HEYPUB_DOMAIN','http://heypublisher.com');    
+define('HEYPUB_DOMAIN','http://heypublisher.com');    
 # Base domain for testing
-define('HEYPUB_DOMAIN','http://localhost:3000');
+// define('HEYPUB_DOMAIN','http://localhost:3000');
 
 define('HEYPUB_PLUGIN_ERROR_CONTACT','Please contact <a href="mailto:wordpress@loudlever.com?subject=plugin%20error">wordpress@loudlever.com</a> to report this error');
 
