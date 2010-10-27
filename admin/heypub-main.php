@@ -21,7 +21,7 @@ function heypub_display_page_title($title,$supress_logo=false) {
 }
 
 function heypub_display_page_logo() {
-  global $hp_xml;
+  global $hp_xml, $hp_base;
 ?>
     <div id='heypub_logo'><a href='http://heypublisher.com' target='_blank' title='Visit HeyPublisher.com'><img src='<?php echo HEY_BASE_URL.'/images/logo.jpg'; ?>' border='0'></a><br/>
       <a href='mailto:<?php echo HEYPUB_FEEDBACK_EMAIL_VALUE; ?>'>Questions?  Email Us!</a>
@@ -33,14 +33,17 @@ function heypub_display_page_logo() {
       <b><a target=_blank href="<?php echo $seo; ?>">See Your Site in Our Database</a></b>
 <?php 
     }
-?>
-      </div>
+    ?>
+    <div id="heypub_donate">
+      <?php echo $hp_base->make_donation_link(); ?>
+    </div>
+  </div>
 <?php  
   
 }
 // Show the page
 function heypub_menu_main()  {
-	global $wpdb,$wp_roles, $hp_xml;
+	global $wpdb,$wp_roles, $hp_xml, $hp_base;
 
 	// get feed_messages
   require_once(ABSPATH . WPINC . '/rss.php');
@@ -120,40 +123,34 @@ if ($hp_xml->is_validated) {
   <tr>
     <th>Homepage Last Indexed</th>
     <th>Guidelines Last Indexed</th>
-    <th>Total Subs Received</th>
-    <th>Total Open Subs</th>
     <th># Comments</th>
     <th># Favorites</th>
-<?php
-    if ($p[avg_response_days] > 0) {
-?>
-    <th>AVG Resp. Time</th>
-<?php 
-    }
-    if ($p[avg_acceptance_rate] > 0) {
-?>
-    <th>AVG Accept. Rate</th>
-<?php 
-    }
-?>    
   </tr>
 </thead>
 <tbody>
   <tr>
     <td><?php echo $hp_xml->get_config_option('homepage_last_validated_at'); ?></td>
     <td><?php echo $hp_xml->get_config_option('guide_last_validated_at'); ?></td>
-    <td><?php echo $p['total_subs']; ?></td>
-    <td><?php echo $p['total_open_subs']; ?></td>
     <td><?php echo $p['writer_comments']; ?></td>
     <td><?php echo $p['writer_favorites']; ?></td>
-<?php
-    if ($p[avg_response_days] > 0) {
-      printf("<td>%s days</td>",$p[avg_response_days]);
-    }
-    if ($p[avg_acceptance_rate] > 0) {
-      printf("<td>%s %%</td>",$p[avg_acceptance_rate]*100);
-    }
-?>
+  </tr>
+</tbody>
+</table>  
+<table class="widefat post fixed">
+<thead>
+  <tr>
+    <th>Submissions Received</th>
+    <th>Pending Review</th>
+    <th>Submissions Published (%)</th>
+    <th>Submissions Rejected (%)</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td><?php echo $p['total_subs']; ?></td>
+    <td><?php echo $hp_base->submission_summary_link($p['total_open_subs']); ?></td>
+    <td><?php ($p[total_published_subs]) ? printf("%s &nbsp;&nbsp; (%s)", $p[total_published_subs], $p['published_rate']) : 'N/A'; ?>%</td>
+    <td><?php ($p[total_rejected_subs]) ? printf("%s &nbsp;&nbsp; (%s)", $p[total_rejected_subs], $p['rejected_rate']) : 'N/A'; ?>%</td>
   </tr>
 </tbody>
 </table>  
@@ -169,16 +166,6 @@ if ($hp_xml->is_validated) {
 <?php
 }
 
-
-/**
-* Display the latest stats on the Dashboard 
-* This functionality will be coming later...
-*
-* @pending
-*/
-function heypub_dashboard() {
-  return false;
-}
 
 function heypub_not_authenticated($page) {
 ?>  

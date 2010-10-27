@@ -3,12 +3,12 @@
 Plugin Name: HeyPublisher Submission Manager
 Plugin URI: http://loudlever.com
 Description: This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.  You can define reading periods, acceptable genres, and other filters to ensure you only receive the submissions that meet your publication's needs.
-Version: 1.2.0
+Version: 1.2.1
 Author: Loudlever, Inc.
 Author URI: http://www.loudlever.com
 
 
-  $Id: heypublisher-sub-mgr.php 135 2010-10-23 00:29:51Z rluck $
+  $Id: heypublisher-sub-mgr.php 139 2010-10-27 21:04:10Z rluck $
 
   Copyright 2010 Loudlever, Inc. (wordpress@loudlever.com)
 
@@ -61,17 +61,19 @@ define('HEY_DIR', dirname(plugin_basename(__FILE__)));
 // Configs specific to the plugin
 // Build Number (must be a integer)
 define('HEY_BASE_URL', get_option('siteurl').'/wp-content/plugins/'.HEY_DIR.'/');
-define("HEYPUB_PLUGIN_BUILD_NUMBER", "35");  // This controls whether or not we get upgrade prompt
+define("HEYPUB_PLUGIN_BUILD_NUMBER", "36");  // This controls whether or not we get upgrade prompt
 define("HEYPUB_PLUGIN_BUILD_DATE", "2010-10-23");  
 // Version Number (can be text)
-define("HEYPUB_PLUGIN_VERSION", "1.2.0");
+define("HEYPUB_PLUGIN_VERSION", "1.2.1");
 
 # Base domain 
-define('HEYPUB_DOMAIN','http://heypublisher.com');    
+// define('HEYPUB_DOMAIN','http://heypublisher.com');    
 # Base domain for testing
-// define('HEYPUB_DOMAIN','http://localhost:3000');
+define('HEYPUB_DOMAIN','http://localhost:3000');
 
 define('HEYPUB_PLUGIN_ERROR_CONTACT','Please contact <a href="mailto:wordpress@loudlever.com?subject=plugin%20error">wordpress@loudlever.com</a> to report this error');
+
+define('HEYPUB_DONATE_URL','https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6XSRBYF4B3RH6');
 
 // which method handles the not-authenticated condition?
 define('HEYPUB_PLUGIN_NOT_AUTHENTICATED_ACTION','heypub_show_menu_options');
@@ -121,8 +123,12 @@ define('HEYPUB_POST_META_KEY_SUB_ID','_heypub_post_meta_key_sub_id');
 * Load all of the plugin files
 */
 require_once(HEYPUB_PLUGIN_FULLPATH.'include'.DIRECTORY_SEPARATOR.'HeyPublisherXML'.DIRECTORY_SEPARATOR.'HeyPublisherXML.class.php');
+require_once(HEYPUB_PLUGIN_FULLPATH.'include'.DIRECTORY_SEPARATOR.'HeyPublisher'.DIRECTORY_SEPARATOR.'HeyPublisher.class.php');
+
 global $hp_xml;
+global $hp_base;
 $hp_xml = new HeyPublisherXML;
+$hp_base = new HeyPublisher;
 
 // These files are required for basic functions
 require_once(HEYPUB_PLUGIN_FULLPATH.'include'.DIRECTORY_SEPARATOR.'heypub-template-functions.php');
@@ -140,6 +146,8 @@ require_once(HEYPUB_PLUGIN_FULLPATH.'admin'.DIRECTORY_SEPARATOR.'heypub-submissi
 register_activation_hook (__FILE__, 'heypub_init');
 register_deactivation_hook( __FILE__, 'heypub_uninit');
 add_action('admin_menu', 'RegisterHeyPublisherAdminMenu');
+// Hook into the 'dashboard' to display some stats
+add_action('wp_dashboard_setup', 'RegisterHeyPublisherDashboardWidget' );
 
 // Ensure we go through the upgrade path even if the user simply installs 
 // a new version of the plugin over top of the old plugin.
@@ -196,15 +204,21 @@ function HeyPublisherAdminInit() {
 }
 
 /*
-Response Tempaltes handler
+Handler for display the Response Templates admin page
 */
 function heypub_response_templates() {
-      require_once(HEYPUB_PLUGIN_FULLPATH.'include'.DIRECTORY_SEPARATOR.'HeyPublisher'.DIRECTORY_SEPARATOR.'HeyPublisherResponse.class.php');
+require_once(HEYPUB_PLUGIN_FULLPATH.'include'.DIRECTORY_SEPARATOR.'HeyPublisher'.DIRECTORY_SEPARATOR.'HeyPublisherResponse.class.php');
   $hp_res = new HeyPublisherResponse;
   $hp_res->handler();
 }
 
-
+function RegisterHeyPublisherDashboardWidget() {
+  wp_add_dashboard_widget('heypub_dash_widget', 'HeyPublisher Statistics', 'heypub_right_now');	
+}
+function heypub_right_now() {
+ global $hp_base;
+ print $hp_base->right_now_widget();
+}
 /*
 -------------------------------------------------------------------------------
 Initialize / Upgrade
@@ -301,7 +315,7 @@ function heypub_init(){
   $opts = $hp_xml->install;
   if ($opts['version_current'] != HEYPUB_PLUGIN_BUILD_NUMBER) {
     // this is the 'normal' upgrade path.
-    if ($opts['version_current'] <= 36) {  // upgrade to 1.2.1 options
+    if ($opts['version_current'] <= 37) {  // upgrade to 1.2.2 options
       
     }
     // For future reference, just keep adding new hash keys that are version specific by following same logic

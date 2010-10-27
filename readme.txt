@@ -1,10 +1,10 @@
 === Plugin Name ===
 Contributors: Loudlever. 
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=ZEXMMPFCRXQRC
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6XSRBYF4B3RH6
 Tags: anonymous, post, submit, submission, unregistered users, custom post interface, plugin, slushpile, HeyPublisher, Loudlever
 Requires at least: 2.8.6
 Tested up to: 3.0
-Stable Tag: 1.2.0
+Stable Tag: 1.2.1
 
 This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.
 
@@ -131,9 +131,13 @@ Yes, as of version 1.2.0 you can define custom response templates that contain w
 10. Response Template Summary.  Get a quick view of the custom responses you are sending to writers at each stage of the submission process.
 11. Response Template Add/Edit Screen.  Add new (or edit existing) response templates. 
 12. Plugin and Publisher Statistics screen.  Gives you a quick snapshot of total submissions, pending submissions, and how many writers have made comments about your publication on HeyPublisher.com
-
+13. Dashboard Summary.  A summary of total submissions received and how many are pending review has been added to the Dashboard, providing you with a quick snapshot.
 
 == Changelog ==
+
+= 1.2.1 =
+
+* Added Submission Summary counts to the Dashboard and to the main plugin information screen.  Introduces metrics on accept vs. reject percentage.
 
 = 1.2.0 =
 
@@ -156,6 +160,12 @@ Yes, as of version 1.2.0 you can define custom response templates that contain w
 * Initial release of HeyPublisher Submission Manager Plugin
 
 == Upgrade Notice ==
+
+= 1.2.1 =
+
+* See Changelog for added functionality.  No bug fixes.
+
+* Released : 2010-10-27
 
 = 1.2.0 =
 

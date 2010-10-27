@@ -81,5 +81,58 @@ EOF;
     $string = sprintf('<ul>%s</ul>',$all);
     return $string;
   }
+  
+  public function get_dashboard_stats() {
+    global $hp_xml;
+    if (!$hp_xml->is_validated) {
+      $data = sprintf("<td colspan='4'><i>Plugin needs to be validated first &nbsp;&nbsp;<a href='%s'>CLICK HERE to VALIDATE</a></i></td>",
+        heypub_get_authentication_url());
+    } else {
+      $p = $hp_xml->get_publisher_info();
+      if ($p[total_open_subs]) {
+        $p[total_open_subs] = $this->submission_summary_link($p[total_open_subs]);
+    }
+    $data = <<<EOF
+<td class="first b">$p[total_subs]</td>
+<td class='t'>Total Submissions Received</td>
+<td class='b'>$p[total_open_subs]</td>
+<td class='last t waiting'>Pending Review</td>
+</tr>
+<tr>
+<td class="first b">$p[total_published_subs]</td>
+<td class='t approved'>Accepted ($p[published_rate] %)</td>
+<td class='b'>$p[total_rejected_subs]</td>
+<td class='last t spam'>Rejected ($p[rejected_rate] %)</td>
+EOF;
+    }
+    return $data;
+  }
+  
+  // for version >= 3.0 stats are displayed in their own dashboard widget
+  public function right_now_widget() {
+    $data = $this->get_dashboard_stats();
+    $str = <<<EOF
+<div class='table' id='dashboard_right_now'>
+<table>
+  <tr class='first'>$data</tr>
+</table>
+</div>
+EOF;
+    return $str;
+  }
+    
+  public function make_donation_link($text_only=false) {
+    $format = "<a href='".HEYPUB_DONATE_URL."' target='_blank' title='Thank You for Donating to HeyPublisher'>%s</a>";
+    if ($text_only) {
+      $str = sprintf($format,'Make a Donation');
+    } else {
+      $str = sprintf($format,"<img id='heypub_donate' style='vertical-align:middle;' src='".HEY_BASE_URL."/images/donate.jpg' border='0'>");
+    }
+    return $str;
+  }
 
+  public function submission_summary_link($text='See All Submissions') {
+    $str = sprintf("<a href='admin.php?page=heypub_show_menu_submissions'>%s</a>",$text);
+    return $str;
+  }
 }

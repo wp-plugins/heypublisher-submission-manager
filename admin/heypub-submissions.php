@@ -13,6 +13,7 @@ function heypub_show_menu_submissions() {
 }
 
 function heypub_submission_actions($nounce,$inc_cancel=false) {
+  global $hp_base;
 ?>  
   <div class="alignleft actions">
   <select name="action">
@@ -25,7 +26,7 @@ function heypub_submission_actions($nounce,$inc_cancel=false) {
   <?php wp_nonce_field($nounce); ?>
 <?php
   if ($inc_cancel) {
-    print '<br/><small><a href="admin.php?page=heypub_show_menu_submissions">See All Submissions</a></small>';
+    printf('<br/><small>%s</small>',$hp_base->submission_summary_link());
   }
 ?>
   </div>
@@ -183,11 +184,9 @@ if(count($subs) > 0) {
 * Display the individual submission
 */
 function heypub_show_submission($id) {
-  global $hp_xml;
+  global $hp_xml, $hp_base;
   // We should move this inclusion up a level at somepoint - but for right now, we just need it here.
-      require_once(HEYPUB_PLUGIN_FULLPATH.'include'.DIRECTORY_SEPARATOR.'HeyPublisher'.DIRECTORY_SEPARATOR.'HeyPublisher.class.php');
-  $hp_base = new HeyPublisher;
-
+      
   // Reading a submission marks it as 'read' in HeyPublisher
   if ($hp_xml->submission_action($id,'read')) {
     $sub = $hp_xml->get_submission_by_id($id);
