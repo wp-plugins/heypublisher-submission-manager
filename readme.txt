@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: anonymous, post, submit, submission, unregistered users, custom post interface, plugin, slushpile, HeyPublisher, Loudlever
 Requires at least: 2.8.6
 Tested up to: 3.0
-Stable Tag: 1.2.1
+Stable Tag: 1.2.2
 
 This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.
 
@@ -134,6 +134,10 @@ Yes, as of version 1.2.0 you can define custom response templates that contain w
 13. Dashboard Summary.  A summary of total submissions received and how many are pending review has been added to the Dashboard, providing you with a quick snapshot.
 
 == Changelog ==
+
+= 1.2.2 =
+
+* Fixes two typos, including an invalid URL.
 
 = 1.2.1 =
 

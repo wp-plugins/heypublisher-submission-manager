@@ -3,7 +3,7 @@
 Plugin Name: HeyPublisher Submission Manager
 Plugin URI: http://loudlever.com
 Description: This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.  You can define reading periods, acceptable genres, and other filters to ensure you only receive the submissions that meet your publication's needs.
-Version: 1.2.1
+Version: 1.2.2
 Author: Loudlever, Inc.
 Author URI: http://www.loudlever.com
 
@@ -64,7 +64,7 @@ define('HEY_BASE_URL', get_option('siteurl').'/wp-content/plugins/'.HEY_DIR.'/')
 define("HEYPUB_PLUGIN_BUILD_NUMBER", "36");  // This controls whether or not we get upgrade prompt
 define("HEYPUB_PLUGIN_BUILD_DATE", "2010-10-23");  
 // Version Number (can be text)
-define("HEYPUB_PLUGIN_VERSION", "1.2.1");
+define("HEYPUB_PLUGIN_VERSION", "1.2.2");
 
 # Base domain 
 define('HEYPUB_DOMAIN','http://heypublisher.com');    

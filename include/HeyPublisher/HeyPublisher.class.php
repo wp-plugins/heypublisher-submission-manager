@@ -100,7 +100,7 @@ EOF;
 </tr>
 <tr>
 <td class="first b">$p[total_published_subs]</td>
-<td class='t approved'>Accepted ($p[published_rate] %)</td>
+<td class='t approved'>Published ($p[published_rate] %)</td>
 <td class='b'>$p[total_rejected_subs]</td>
 <td class='last t spam'>Rejected ($p[rejected_rate] %)</td>
 EOF;
