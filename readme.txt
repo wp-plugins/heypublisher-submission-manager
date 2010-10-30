@@ -3,8 +3,8 @@ Contributors: Loudlever.
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6XSRBYF4B3RH6
 Tags: anonymous, post, submit, submission, unregistered users, custom post interface, plugin, slushpile, HeyPublisher, Loudlever
 Requires at least: 2.8.6
-Tested up to: 3.0
-Stable Tag: 1.2.2
+Tested up to: 3.0.1
+Stable Tag: 1.2.3
 
 This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.
 
@@ -135,6 +135,10 @@ Yes, as of version 1.2.0 you can define custom response templates that contain w
 
 == Changelog ==
 
+= 1.2.3 =
+
+* Fixed wrapping issue seen in Dashboard widget when at small scale and in some circumstances always in XP (thanks Shrikant!).
+
 = 1.2.2 =
 
 * Fixes two typos, including an invalid URL.
@@ -164,6 +168,16 @@ Yes, as of version 1.2.0 you can define custom response templates that contain w
 * Initial release of HeyPublisher Submission Manager Plugin
 
 == Upgrade Notice ==
+
+= 1.2.3 =
+
+* Released : 2010-10-30
+
+* Fixes Dashboard wrapping issue.  Please upgrade.
+
+= 1.2.2 =
+
+* Released : 2010-10-27
 
 = 1.2.1 =
 

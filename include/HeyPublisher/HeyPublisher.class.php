@@ -94,15 +94,21 @@ EOF;
     }
     $data = <<<EOF
 <td class="first b">$p[total_subs]</td>
-<td class='t'>Total Submissions Received</td>
+<td class='t'>Total Subs</td>
 <td class='b'>$p[total_open_subs]</td>
-<td class='last t waiting'>Pending Review</td>
+<td class='last t waiting'>Pending</td>
 </tr>
 <tr>
 <td class="first b">$p[total_published_subs]</td>
-<td class='t approved'>Published ($p[published_rate] %)</td>
+<td class='t approved'>Published</td>
 <td class='b'>$p[total_rejected_subs]</td>
-<td class='last t spam'>Rejected ($p[rejected_rate] %)</td>
+<td class='last t spam'>Rejected</td>
+</tr>
+<tr>
+<td class="first b">$p[published_rate]</td>
+<td class='t approved'>Published %</td>
+<td class='b'>$p[rejected_rate]</td>
+<td class='last t spam'>Rejected %</td>
 EOF;
     }
     return $data;
