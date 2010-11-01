@@ -3,12 +3,12 @@
 Plugin Name: HeyPublisher Submission Manager
 Plugin URI: http://loudlever.com
 Description: This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.  You can define reading periods, acceptable genres, and other filters to ensure you only receive the submissions that meet your publication's needs.
-Version: 1.2.3
+Version: 1.2.4
 Author: Loudlever, Inc.
 Author URI: http://www.loudlever.com
 
 
-  $Id: heypublisher-sub-mgr.php 141 2010-10-30 16:49:49Z rluck $
+  $Id: heypublisher-sub-mgr.php 139 2010-10-27 21:04:10Z rluck $
 
   Copyright 2010 Loudlever, Inc. (wordpress@loudlever.com)
 
@@ -61,10 +61,10 @@ define('HEY_DIR', dirname(plugin_basename(__FILE__)));
 // Configs specific to the plugin
 // Build Number (must be a integer)
 define('HEY_BASE_URL', get_option('siteurl').'/wp-content/plugins/'.HEY_DIR.'/');
-define("HEYPUB_PLUGIN_BUILD_NUMBER", "37");  // This controls whether or not we get upgrade prompt
-define("HEYPUB_PLUGIN_BUILD_DATE", "2010-10-30");  
+define("HEYPUB_PLUGIN_BUILD_NUMBER", "38");  // This controls whether or not we get upgrade prompt
+define("HEYPUB_PLUGIN_BUILD_DATE", "2010-11-01");  
 // Version Number (can be text)
-define("HEYPUB_PLUGIN_VERSION", "1.2.3");
+define("HEYPUB_PLUGIN_VERSION", "1.2.4");
 
 # Base domain 
 define('HEYPUB_DOMAIN','http://heypublisher.com');    
@@ -127,8 +127,6 @@ require_once(HEYPUB_PLUGIN_FULLPATH.'include'.DIRECTORY_SEPARATOR.'HeyPublisher'
 
 global $hp_xml;
 global $hp_base;
-global $hp_sub;
-
 $hp_xml = new HeyPublisherXML;
 $hp_base = new HeyPublisher;
 
@@ -317,7 +315,7 @@ function heypub_init(){
   $opts = $hp_xml->install;
   if ($opts['version_current'] != HEYPUB_PLUGIN_BUILD_NUMBER) {
     // this is the 'normal' upgrade path.
-    if ($opts['version_current'] <= 38) {  // upgrade to 1.2.2 options
+    if ($opts['version_current'] <= 50) {  // upgrade to 1.3.0 options
       
     }
     // For future reference, just keep adding new hash keys that are version specific by following same logic

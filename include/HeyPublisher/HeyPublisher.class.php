@@ -113,7 +113,7 @@ EOF;
     }
     return $data;
   }
-  
+
   // for version >= 3.0 stats are displayed in their own dashboard widget
   public function right_now_widget() {
     $data = $this->get_dashboard_stats();
@@ -126,7 +126,7 @@ EOF;
 EOF;
     return $str;
   }
-    
+
   public function make_donation_link($text_only=false) {
     $format = "<a href='".HEYPUB_DONATE_URL."' target='_blank' title='Thank You for Donating to HeyPublisher'>%s</a>";
     if ($text_only) {
@@ -142,3 +142,4 @@ EOF;
     return $str;
   }
 }
+  

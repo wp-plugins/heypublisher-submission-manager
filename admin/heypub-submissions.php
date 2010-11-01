@@ -1,7 +1,10 @@
 <?php
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('HeyPublisher: Illegal Page Call!'); }
 
+/* @todo filters: form ids, posts with edits, with no edits, by user, by IP  */
+
 // Show the moderation menu
+//
 function heypub_show_menu_submissions() {
   global $wpdb, $wp_roles, $hp_xml;
   
@@ -181,7 +184,7 @@ if(count($subs) > 0) {
 * Display the individual submission
 */
 function heypub_show_submission($id) {
-  global $hp_xml, $hp_base, $hp_sub;
+  global $hp_xml, $hp_base;
   // We should move this inclusion up a level at somepoint - but for right now, we just need it here.
       
   // Reading a submission marks it as 'read' in HeyPublisher
@@ -253,15 +256,9 @@ function heypub_show_submission($id) {
     echo $hp_base->other_publisher_link($sub->published->publisher,$sub);
     }
 ?>
-<!-- Editor Voting -->
-    <br/>
-<?php echo $hp_sub->editor_vote_box(); ?>  
-  
-
       </td>
       </tr>
     </table>
-    
   </div>
 <?php    
   }
@@ -449,11 +446,7 @@ function heypub_accept_submission($req) {
 // Handle operations for this form
 //
 function heypub_submission_handler() {
-  global $hp_xml, $hp_sub;
-  $ds = DIRECTORY_SEPARATOR;
-  require_once(HEYPUB_PLUGIN_FULLPATH.'include'.$ds.'HeyPublisher'.$ds.'HeyPublisherSubmission.class.php');
-  $hp_sub = new HeyPublisherSubmission;
-  
+  global $hp_xml;
   $message = "";
 
   // printf("<pre>request = %s</pre>",print_r($_REQUEST,1));
