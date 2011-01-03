@@ -8,7 +8,7 @@ Author: Loudlever, Inc.
 Author URI: http://www.loudlever.com
 
 
-  $Id: heypublisher-sub-mgr.php 139 2010-10-27 21:04:10Z rluck $
+  $Id: heypublisher-sub-mgr.php 145 2010-12-16 22:20:13Z rluck $
 
   Copyright 2010 Loudlever, Inc. (wordpress@loudlever.com)
 
@@ -54,17 +54,18 @@ define('HEY_DIR', dirname(plugin_basename(__FILE__)));
   
   1.1.0 => 29
   1.2.0 => 35
-  
+  1.2.4 => 38
+  1.3.0 => 40
 ---------------------------------------------------------------------------------
 */  
 
 // Configs specific to the plugin
 // Build Number (must be a integer)
 define('HEY_BASE_URL', get_option('siteurl').'/wp-content/plugins/'.HEY_DIR.'/');
-define("HEYPUB_PLUGIN_BUILD_NUMBER", "38");  // This controls whether or not we get upgrade prompt
+define("HEYPUB_PLUGIN_BUILD_NUMBER", "40");  // This controls whether or not we get upgrade prompt
 define("HEYPUB_PLUGIN_BUILD_DATE", "2010-11-01");  
 // Version Number (can be text)
-define("HEYPUB_PLUGIN_VERSION", "1.2.4");
+define("HEYPUB_PLUGIN_VERSION", "1.3.0");
 
 # Base domain 
 define('HEYPUB_DOMAIN','http://heypublisher.com');    
@@ -82,10 +83,11 @@ define('HEYPUB_PLUGIN_FULLPATH', WP_PLUGIN_DIR.DIRECTORY_SEPARATOR.HEY_DIR.DIREC
 
 // How to connect to the service
 define('HEYPUB_FEEDBACK_EMAIL_VALUE','wordpress@loudlever.com?subject=HeyPublisher%20Wordpress%20Plugin');
+define('HEYPUB_FEEDBACK_GETSATISFACTION','http://getsatisfaction.com/hey');
 define('HEYPUB_SVC_URL_STYLE_GUIDE','http://www.loudlever.com/docs/plugins/wordpress/style_guide');     # designates the URL of the style guide
 define('HEYPUB_SVC_URL_BASE', HEYPUB_DOMAIN . '/api/v1');                 # designates the base URL and version of API
 # Stylesheet for plugin resides on HP server now
-define('HEYPUB_SVC_STYLESHEET_URL',HEYPUB_DOMAIN . '/stylesheets/wordpress/plugin.css?R9');
+define('HEYPUB_SVC_STYLESHEET_URL',HEYPUB_DOMAIN . '/stylesheets/wordpress/plugin.css?R11.1');
 
 define('HEYPUB_SVC_URL_SUBMIT_FORM','submissions');           
 define('HEYPUB_SVC_URL_AUTHENTICATE','publishers/fetch_or_create');           # initial plugin authentication
@@ -127,6 +129,8 @@ require_once(HEYPUB_PLUGIN_FULLPATH.'include'.DIRECTORY_SEPARATOR.'HeyPublisher'
 
 global $hp_xml;
 global $hp_base;
+global $hp_sub;
+
 $hp_xml = new HeyPublisherXML;
 $hp_base = new HeyPublisher;
 
@@ -145,9 +149,28 @@ require_once(HEYPUB_PLUGIN_FULLPATH.'admin'.DIRECTORY_SEPARATOR.'heypub-submissi
 // Initiate the callbacks
 register_activation_hook (__FILE__, 'heypub_init');
 register_deactivation_hook( __FILE__, 'heypub_uninit');
+// Register the adminstration menu
 add_action('admin_menu', 'RegisterHeyPublisherAdminMenu');
 // Hook into the 'dashboard' to display some stats
 add_action('wp_dashboard_setup', 'RegisterHeyPublisherDashboardWidget' );
+
+// IMPORTANT: If you have custom posts and want to have HeyPublisher send a notice
+// to the writer when the submission is either published, or rejected after acceptance,
+// you will need to modify the 3 add_action() statements below.
+// Simply change '_post' to '_your_custom_post type'
+// For example, if your custom post type is called 'story', 
+// Change 
+//          add_action('publish_post','heypub_publish_post');
+// to read:
+//          add_action('publish_story','heypub_publish_post');
+
+// Marks the submission as 'published' in HeyPublisher and removes it from your Submission Summary screen:
+add_action('publish_post','heypub_publish_post');
+// Marks a previously accepted submission as 'rejected' in HeyPublisher and removes it from your Submission Summary screen:
+// this one executes when the submission is moved to 'trash'
+add_action('trash_post','heypub_reject_post');
+// this one executes when you skip the trash an simply 'delete' the submission
+add_action('delete_post','heypub_reject_post');
 
 // Ensure we go through the upgrade path even if the user simply installs 
 // a new version of the plugin over top of the old plugin.
@@ -162,19 +185,20 @@ if ($hp_xml->install['version_current'] != HEYPUB_PLUGIN_BUILD_NUMBER) {
 function RegisterHeyPublisherAdminMenu(){
   global $hp_xml;
   // Initilise the plugin for the first time here. This gets called when you click the HeyPublisher link.
+	$countHTML = '';
+  //   $count = 25;
+  // if($count) {
+  //  $countHTML = ' <span id="awaiting-mod" class="count-1"><span class="pending-count">'.$count.'</span></span>';
+  // }
 
-    $admin_menu = add_menu_page('HeyPublisher','HeyPublisher', 8, HEY_DIR, 'heypub_menu_main', HEY_BASE_URL.'images/heypub-icon.png');
+    $admin_menu = add_menu_page('HeyPublisher Stats','HeyPublisher', 8, HEY_DIR, 'heypub_menu_main', HEY_BASE_URL.'images/heypub-icon.png');
     add_action("admin_print_styles-$admin_menu", 'HeyPublisherAdminHeader' );
 
   if ($hp_xml->is_validated) {
       // Submission Queue
-      $admin_sub = add_submenu_page(HEY_DIR , 'HeyPublisher Submissions', 'Submissions', 'edit_others_posts', 'heypub_show_menu_submissions', 'heypub_show_menu_submissions');
+      $admin_sub = add_submenu_page(HEY_DIR , 'HeyPublisher Submissions', 'Submissions'.$countHTML, 'edit_others_posts', 'heypub_show_menu_submissions', 'heypub_show_menu_submissions');
       add_action("admin_print_styles-$admin_sub", 'HeyPublisherAdminHeader' );
       add_action("admin_print_scripts-$admin_sub", 'HeyPublisherAdminInit');
-      // capture when a submission is published
-      add_action('publish_post','heypub_publish_post');
-      // capture when a submission is deleted from the posts
-      add_action('delete_post','heypub_reject_post');
   }
     // Configure Options
     $admin_opts = add_submenu_page( HEY_DIR , 'Configure HeyPublisher', 'Plugin Options', 'manage_options', 'heypub_show_menu_options', 'heypub_show_menu_options');
@@ -306,20 +330,35 @@ function heypub_init(){
     $hp_xml->set_config_option('state',false);
     $hp_xml->set_config_option('zipcode',false);
     $hp_xml->set_config_option('country',false);
-
     $hp_xml->set_config_option('sub_page_id',false);
     $hp_xml->set_config_option('sub_guide_id',false);
+    // added with 1.3.0
+    $hp_xml->set_config_option('reprint_subs','0');
+    $hp_xml->set_config_option('rss',get_bloginfo('rss2_url'));
+    $hp_xml->set_config_option('notify_submitted',true);
+    $hp_xml->set_config_option('notify_read',true);
+    $hp_xml->set_config_option('notify_rejected',true);
+    $hp_xml->set_config_option('notify_published',true);
+    $hp_xml->set_config_option('notify_accepted',true);
+    $hp_xml->set_config_option('notify_under_consideration',true);
   } 
   
   // now check for a normal upgrade path
   $opts = $hp_xml->install;
   if ($opts['version_current'] != HEYPUB_PLUGIN_BUILD_NUMBER) {
     // this is the 'normal' upgrade path.
-    if ($opts['version_current'] <= 50) {  // upgrade to 1.3.0 options
-      
+    if ($opts['version_current'] <= 40) {  // upgrade to 1.3.0 options
+      $hp_xml->set_config_option('notify_submitted',true);
+      $hp_xml->set_config_option('notify_read',true);
+      $hp_xml->set_config_option('notify_rejected',true);
+      $hp_xml->set_config_option('notify_published',true);
+      $hp_xml->set_config_option('notify_accepted',true);
+      $hp_xml->set_config_option('notify_under_consideration',true);
+      $hp_xml->set_config_option('reprint_subs','0');
+      $hp_xml->set_config_option('rss',get_bloginfo('rss2_url'));
     }
     // For future reference, just keep adding new hash keys that are version specific by following same logic
-    // if ($opts['version_current'] < 50) {  // upgrade to 1.2.6 options
+    // if ($opts['version_current'] < 50) {  // upgrade to 1.4.0 options
     //    ... do something here  
     // }
     
@@ -337,6 +376,7 @@ function heypub_uninit() {
   $opts = $hp_xml->config;
   $install = $hp_xml->install;
   if ($install != FALSE && isset($install['user_oid']) ) {
+    // disable the publisher in the db
     $opts[accepting_subs] = false;
     $opts[genres_list] = false;
     $opts['guide'] = get_permalink($opts['sub_guide_id']);

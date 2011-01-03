@@ -2,7 +2,7 @@
 if(preg_match('#' . basename(__FILE__) . '#', $_SERVER['PHP_SELF'])) { die('HeyPublisher: Illegal Page Call!'); }
 
 function heypub_show_menu_options() {
-  global $hp_xml;
+  global $hp_xml,$hp_base;
   //   Possibly process form post
   heypub_update_options();
   
@@ -65,6 +65,14 @@ function heypub_show_menu_options() {
     <label class='heypub' for='hp_url'>Publication URL</label>
     <input type="text" name="heypub_opt[url]" id="hp_url" class='heypub' value="<?php echo $opts['url']; ?>" />
   <br/>
+    <label class='heypub' for='hp_established'>Year Established</label>
+    <input type="text" name="heypub_opt[established]" id="hp_established" class='heypub' value="<?php echo $opts['established']; ?>" />
+  <br/>
+    <label class='heypub' for='hp_circulation'>Monthly Circulation (Visitors)</label>
+    <input type="text" name="heypub_opt[circulation]" id="hp_circulation" class='heypub' value="<?php echo $opts['circulation']; ?>" /> (000's)
+
+  <h3>Publication Contact Information</h3>
+
     <label class='heypub' for='hp_editor_name'>Publication Editor</label>
     <input type="text" name="heypub_opt[editor_name]" id="hp_editor_name" class='heypub' value="<?php echo  $opts['editor_name']; ?>" />
   <br/>
@@ -86,6 +94,15 @@ function heypub_show_menu_options() {
     <label class='heypub' for='hp_country'>Country</label>
     <input type="text" name="heypub_opt[country]" id="hp_country" class='heypub' value="<?php echo $opts['country']; ?>" />
     
+<h3>Social Media Information</h3>
+  <br/>
+    <label class='heypub' for='hp_facebook'>Facebook Fan Page URL</label>
+    <input type="text" name="heypub_opt[facebook]" id="hp_facebook" class='heypub' value="<?php echo $opts['facebook']; ?>" />
+  <br/>
+    <label class='heypub' for='hp_twitter'>Twitter ID</label>
+    @<input type="text" name="heypub_opt[twitter]" id="hp_twitter" class='heypub_twitter' value="<?php echo $opts['twitter']; ?>" />
+
+
   <h3>Submission Form</h3>
 <?php
     if (!$opts[sub_page_id]) {
@@ -101,7 +118,7 @@ function heypub_show_menu_options() {
   }
 ?>  
   <p>Ensure that the following code is contained somewhere in the page.</p>
-  <blockquote><b><?php echo HEYPUB_SUBMISSION_PAGE_REPLACER; ?></b></blockquote>
+  <blockquote class='heypub'><b><?php echo HEYPUB_SUBMISSION_PAGE_REPLACER; ?></b></blockquote>
   <p>This code will be replaced by the actual submission form when users go to the page.</p>
     <label class='heypub' for='hp_submission_page'>Submission Form Page</label>
     <select name="heypub_opt[sub_page_id]" id="hp_submission_page" class='heypub'> 
@@ -208,10 +225,42 @@ function heypub_show_menu_options() {
       <option value='1' <?php if($opts['multi_subs'] == '1') echo "selected=selected"; ?>>Yes</option>
       </select>
 
+<br clear='both'>
+
+<!-- Reprint Subs -->
+      <label class='heypub' for='hp_reprint_subs'>Accept Reprints?</label>
+      <select name="heypub_opt[reprint_subs]" id="hp_reprint_subs">
+      <option value='0' <?php if($opts['reprint_subs'] == '0') echo "selected=selected"; ?>>No</option>
+      <option value='1' <?php if($opts['reprint_subs'] == '1') echo "selected=selected"; ?>>Yes</option>
+      </select>
+
+<!-- Notification Options -->
+
+      <h3>Notification Options</h3>
+      <p>Indicate if you want the plugin to send an email to the writer when their submission reaches each of the submission states listed below.  You can control the content of the emails sent to the writer via the <a href='admin.php?page=heypub_response_templates' target=_top>Response Templates</a> screen.</p>
+<?php
+// We'll introduce this later - for now it's hard-coded to yes
+// 
+    // <br clear='both'>
+      // <?php echo $hp_base->get_yes_no_checkbox('Submitted?','notify_submitted',$opts['notify_submitted'],'Sent when the writer first submits their work for consideration.'); 
+?>
+    <input type='hidden' name='notify_submitted' value='1'>
+    <br clear='both'>
+      <?php echo $hp_base->get_yes_no_checkbox('Read?','notify_read',$opts['notify_read'],'Sent when the submission is first reviewed by an Editor.'); ?>
+    <br clear='both'>
+      <?php echo $hp_base->get_yes_no_checkbox('Under Review?','notify_under_consideration',$opts['notify_under_consideration'],'Sent when the submission is saved for Later Review.'); ?>
+    <br clear='both'>
+      <?php echo $hp_base->get_yes_no_checkbox('Accepted?','notify_accepted',$opts['notify_accepted'],'Sent if the submission is Accepted for publication.'); ?>
+    <br clear='both'>
+      <?php echo $hp_base->get_yes_no_checkbox('Rejected?','notify_rejected',$opts['notify_rejected'],'Sent if the submission is Rejected by an Editor.'); ?>
+    <br clear='both'>
+      <?php echo $hp_base->get_yes_no_checkbox('Published?','notify_published',$opts['notify_published'],'Sent if a submission is Published.  Sent on the actual publication date if you schedule works for publication on a future date.'); ?>
+
+
 <!-- Payment Options -->
         
       <h3>Payment Options</h3>
-      <p>Does your publication pay writers for publishing their works?</p>
+      <p>Does your publication pay writers for publishing their work?</p>
       <label class='heypub' for='hp_paying_market'>Paying Market?</label>
       <select name="heypub_opt[paying_market]" id="hp_paying_market" onchange="heypub_select_toggle('hp_paying_market','hyepub_paying_market_range_display');">>
       <option value='0' <?php if($opts['paying_market'] == '0') echo "selected=selected"; ?>>No</option>
@@ -225,15 +274,25 @@ function heypub_show_menu_options() {
       </div>
 
 <!-- MISC -->
-<h3>Miscellaneous</h3>
-<p>Turn off HTML clean-up in submissions?  Select YES if you are getting strange characters in the body of the submission.<br/>  In most cases, however, you will want to leave this set to No.</p>
-<label class='heypub' for='hp_no_tidy'>Turn Off HTML Clean-Up?</label>
-<select name="heypub_opt[turn_off_tidy]" id="hp_turn_off_tidy">
-<option value='0' <?php if($opts['turn_off_tidy'] == '0') echo "selected=selected"; ?>>No</option>
-<option value='1' <?php if($opts['turn_off_tidy'] == '1') echo "selected=selected"; ?>>Yes</option>
-</select>
+  <h3>Miscellaneous</h3>
+  <p>Turn off HTML clean-up in submissions?  Select YES if you are getting strange characters in the body of the submission.<br/>  In most cases, however, you will want to leave this set to No.</p>
+  <label class='heypub' for='hp_no_tidy'>Turn Off HTML Clean-Up?</label>
+  <select name="heypub_opt[turn_off_tidy]" id="hp_turn_off_tidy">
+  <option value='0' <?php if($opts['turn_off_tidy'] == '0') echo "selected=selected"; ?>>No</option>
+  <option value='1' <?php if($opts['turn_off_tidy'] == '1') echo "selected=selected"; ?>>Yes</option>
+  </select>
 
-
+<?php
+/*
+  // Future : Download of original document is coming ....
+  <p>Display link to download original document?  Select yes if you want your editors to have the ability to download the original Word document.  This link will be displayed in the side bar when viewing the submission.</p>
+  <label class='heypub' for='hp_doc_download'>Display Download Link?</label>
+  <select name="heypub_opt[display_download_link]" id="hp_doc_download">
+  <option value='0' <?php if($opts['display_download_link'] == '0') echo "selected=selected"; ?>>No</option>
+  <option value='1' <?php if($opts['display_download_link'] == '1') echo "selected=selected"; ?>>Yes</option>
+  </select>
+*/
+?>
 <br/>
 <hr>
 <?php
@@ -358,8 +417,12 @@ function heypub_update_options() {
         $hp_xml->set_config_option('paying_market_range',null);
       } 
 
-      // get the URL and send this value to HP
+      // get the URL for the sub guidelines
       $opts['guide'] = get_permalink($opts['sub_guide_id']);
+      // get the URL for the sub form itself
+      $opts['submission_url'] = get_permalink($opts['sub_page_id']);
+      // Blog's RSS feed is:
+      $opts['rss'] = get_bloginfo('rss2_url');
       // now attempt to sync with HeyPublisher.com
       $success = $hp_xml->update_publisher($opts);
       // fetch the info back because we want to store seo_url and other stats locally.

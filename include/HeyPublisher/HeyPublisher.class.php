@@ -23,6 +23,11 @@ class HeyPublisher {
     return "<h2>$title</h2>";
   }
   
+  public function get_form_post_url_for_page($page) {
+    $url = sprintf('%s/wp-admin/admin.php?page=%s',get_bloginfo('wpurl'),$page);
+    return $url;
+  }
+  
   public function page_logo() {
     global $hp_xml;
     $format = "<div id='heypub_logo'>%s</div>";
@@ -59,26 +64,29 @@ EOF;
   // - the contextual publisher object
   // - the submission object
   public function other_publisher_link($obj,$sub) {
-    $string_format = '<ul>%s</ul>';
     // loop through values in the object
+    $string = false;
     $all = '';
-    foreach ($obj as $key=>$val) {
-      $str = '';
-      if ($val->url != '') {
-        $str .= sprintf("<b><a target=_blank href='%s'>%s</a></b>",$val->url,$val->name);
-      } else {
-        $str .= sprintf("<b>%s</b>",$val->name);
+    // printf("<pre>OBJ = %s</pre>",print_r($obj,1));
+    if ($obj) {
+      foreach ($obj as $key=>$val) {
+        $str = '';
+        if ($val->url != '') {
+          $str .= sprintf("<b><a target=_blank href='%s'>%s</a></b>",$val->url,$val->name);
+        } else {
+          $str .= sprintf("<b>%s</b>",$val->name);
+        }
+        if ($val->date != '') {
+          $str .= sprintf("&nbsp;<small>[%s]</small>",$val->date);
+        }
+        if ($val->editor != '' && $val->email != '') {
+          $str .= sprintf("<span>edited by <a href='mailto:%s?subject=Question about \"%s\" by %s %s'>%s</a></a></span>",
+              $val->email,$sub->title,$sub->author->first_name, $sub->author->last_name,$val->editor);
+        }
+        $all .= sprintf('<li>%s</li>',$str);
       }
-      if ($val->date != '') {
-        $str .= sprintf("&nbsp;<small>[%s]</small>",$val->date);
-      }
-      if ($val->editor != '' && $val->email != '') {
-        $str .= sprintf("<span>edited by <a href='mailto:%s?subject=Question about \"%s\" by %s %s'>%s</a></a></span>",
-            $val->email,$sub->title,$sub->author->first_name, $sub->author->last_name,$val->editor);
-      }
-      $all .= sprintf('<li>%s</li>',$str);
+      $string = sprintf('<ul>%s</ul>',$all);
     }
-    $string = sprintf('<ul>%s</ul>',$all);
     return $string;
   }
   
@@ -110,10 +118,26 @@ EOF;
 <td class='b'>$p[rejected_rate]</td>
 <td class='last t spam'>Rejected %</td>
 EOF;
+// for future ref, if we want to add this in:
+// </tr>
+// <tr>
+// <td colspan=4 class='t'><b>Response Statistics:</b></td>
+// </tr>
+// <tr>
+// <td class="first b">$p[avg_response_days]</td>
+// <td class='t'>Avg. Response Days</td>
+// <td class='b'>$p[total_thirty_late]</td>
+// <td class='last t approved'>30 Days Old</td>
+// </tr>
+// <tr>
+// <td class="first b">$p[total_sixty_late]</td>
+// <td class='t waiting'>60 Days Old</td>
+// <td class='b'>$p[total_ninety_late]</td>
+// <td class='last t spam'>90 Days Old</td>
     }
     return $data;
   }
-
+  
   // for version >= 3.0 stats are displayed in their own dashboard widget
   public function right_now_widget() {
     $data = $this->get_dashboard_stats();
@@ -126,7 +150,7 @@ EOF;
 EOF;
     return $str;
   }
-
+    
   public function make_donation_link($text_only=false) {
     $format = "<a href='".HEYPUB_DONATE_URL."' target='_blank' title='Thank You for Donating to HeyPublisher'>%s</a>";
     if ($text_only) {
@@ -141,5 +165,18 @@ EOF;
     $str = sprintf("<a href='admin.php?page=heypub_show_menu_submissions'>%s</a>",$text);
     return $str;
   }
-}
   
+  public function get_yes_no_checkbox($label,$key,$val,$alt=false) {
+    $no = ($val == '0') ? 'selected=selected' : null;
+    $yes = ($val == '1') ? 'selected=selected' : null;
+    $str = <<<EOF
+<label class='heypub' for='hp_$key'>$label</label>
+<select name="heypub_opt[$key]" id="hp_$key">
+<option value='0' $no>No</option>
+<option value='1' $yes>Yes</option>
+</select>
+&nbsp;<small>$alt</small>
+EOF;
+    return $str;
+  }
+}

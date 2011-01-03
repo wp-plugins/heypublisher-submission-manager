@@ -24,12 +24,11 @@ function heypub_display_page_logo() {
   global $hp_xml, $hp_base;
 ?>
     <div id='heypub_logo'><a href='http://heypublisher.com' target='_blank' title='Visit HeyPublisher.com'><img src='<?php echo HEY_BASE_URL.'/images/logo.jpg'; ?>' border='0'></a><br/>
-      <a href='mailto:<?php echo HEYPUB_FEEDBACK_EMAIL_VALUE; ?>'>Questions?  Email Us!</a>
+    <a class='heypub_smart_button' href='<?php echo HEYPUB_FEEDBACK_GETSATISFACTION; ?>' target='_blank' title="Need Support?  We're here to help!">Questions?  Contact Us!</a>
 <?php
       $seo = $hp_xml->get_config_option('seo_url');
       if ($seo) {
 ?>      
-      <hr>
       <b><a target=_blank href="<?php echo $seo; ?>">See Your Site in Our Database</a></b>
 <?php 
     }
@@ -135,7 +134,7 @@ if ($hp_xml->is_validated) {
     <td><?php echo $p['writer_favorites']; ?></td>
   </tr>
 </tbody>
-</table>  
+</table>
 <table class="widefat post fixed">
 <thead>
   <tr>
@@ -151,6 +150,25 @@ if ($hp_xml->is_validated) {
     <td><?php echo $hp_base->submission_summary_link($p['total_open_subs']); ?></td>
     <td><?php ($p[total_published_subs]) ? printf("%s &nbsp;&nbsp; (%s)", $p[total_published_subs], $p['published_rate']) : 'N/A'; ?>%</td>
     <td><?php ($p[total_rejected_subs]) ? printf("%s &nbsp;&nbsp; (%s)", $p[total_rejected_subs], $p['rejected_rate']) : 'N/A'; ?>%</td>
+  </tr>
+</tbody>
+</table>  
+
+<table class="widefat post fixed">
+<thead>
+  <tr>
+    <th>Avg. Response Time</th>
+    <th>Subs Open 30 Days</th>
+    <th>Subs Open 60 Days</th>
+    <th>Subs Open 90 Days</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class='t'><?php echo $p['avg_response_days']; ?> Days</td>
+    <td class='approved'><?php echo $p['total_thirty_late']; ?></td>
+    <td class='waiting'><?php echo $p['total_sixty_late']; ?></td>
+    <td class='spam'><?php echo $p['total_ninety_late']; ?></td>
   </tr>
 </tbody>
 </table>  

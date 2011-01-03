@@ -10,13 +10,17 @@ class HeyPublisherXML {
   var $error = false;
   var $user_oid = false;
   var $pub_oid = false;
+  // map submission state transitions to meaningful values in UI
   var $submission_status = array(
     'unread' => 'New',
     'read' => 'Read',
     'under_consideration' => 'Under Review',
     'accepted' => 'Accepted for Publication',
     'rejected' => 'Rejected',
-    'published' => 'Published');
+    'published' => 'Published',
+    'publisher_revision_requested' => 'Revision Requested',
+    'writer_revision_provided' => 'Revised by Author'
+    );
   var $is_validated = false;
 
   var $config = array();
@@ -90,12 +94,15 @@ class HeyPublisherXML {
       'categories' => array(),
       'name'  => null,
       'url'   => null,
+      'circulation' => null,
+      'established' => null,
       'editor_name' => null,
       'editor_email' => null,
       'accepting_subs' => false,
       'reading_period' => null,
       'simu_subs' => false,
       'multi_subs' => false,
+      'reprint_subs' => false,
       'paying_market' => false,
       'paying_market_range' => null,
       'address' => null,
@@ -103,6 +110,9 @@ class HeyPublisherXML {
       'state' => null,
       'zipcode' => null,
       'country' => null,
+      'twitter' => null,
+      'facebook' => null,
+      'rss' => null,
       'sub_page_id' => null,
       'sub_guide_id' => null,
       'seo_url' => null,
@@ -110,8 +120,16 @@ class HeyPublisherXML {
       'homepage_last_validated_at' => null,
       'guide_first_validated_at' => null,
       'guide_last_validated_at' => null,
+      // need to match default config in DB
+      'notify_submitted' => true,
+      'notify_read' => true,
+      'notify_rejected' => true,
+      'notify_published' => true,
+      'notify_accepted' => true,
+      'notify_under_consideration' => true,
       'turn_off_tidy' => false,
-      'link_sub_to_edit' => true
+      'link_sub_to_edit' => true,           # don't think we're using this one??
+      'display_download_link' => false      # this is a local-only config
     );
     return $hash;
   }
@@ -150,7 +168,7 @@ class HeyPublisherXML {
     $url = sprintf("%s/%s",$this->svc_url,$path);
     curl_setopt($this->curl, CURLOPT_URL, $url);
     curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1);
-    curl_setopt($this->curl, CURLOPT_TIMEOUT, 4);
+    curl_setopt($this->curl, CURLOPT_TIMEOUT, 10);
     curl_setopt ($this->curl, CURLOPT_HTTPHEADER, array(
         "Accept: application/xml",
         "Content-Type: application/xml; charset=utf-8",
@@ -306,6 +324,7 @@ EOF;
     $reading = $this->update_publisher_reading_period($post);
     $simulsubs = $this->boolean($post[simu_subs]);
     $multisubs = $this->boolean($post[multi_subs]);
+    $reprints = $this->boolean($post[reprint_subs]);
     $accepting_subs  = $this->boolean($post[accepting_subs]);
     $paying = $this->update_publisher_paying_market($post);
     $post = <<<EOF
@@ -314,18 +333,33 @@ EOF;
     <publishertype_id>$post[pub_type]</publishertype_id>
     <name>$post[name]</name>
     <url>$post[url]</url>
+    <established>$post[established]</established>
+    <circulation>$post[circulation]</circulation>
     <sub_guideline>$post[guide]</sub_guideline>
     <editor>$post[editor_name]</editor>
     <editor_email>$post[editor_email]</editor_email>
     <accepts_simultaneous_submissions>$simulsubs</accepts_simultaneous_submissions>
     <accepts_multiple_submissions>$multisubs</accepts_multiple_submissions>
+    <accepts_reprints>$reprints</accepts_reprints>
     <now_accepting_submissions>$accepting_subs</now_accepting_submissions>
     <address>$post[address]</address>
     <city>$post[city]</city>
     <state>$post[state]</state>
     <zipcode>$post[zipcode]</zipcode>
     <country>$post[country]</country>
+    <twitter>$post[twitter]</twitter>
+    <facebook>$post[facebook]</facebook>
+    <submission_url>$post[submission_url]</submission_url>
+    <submission_product>HeyPublisher</submission_product>
+    <platform>wordpress</platform>
     <turn_off_tidy>$post[turn_off_tidy]</turn_off_tidy>
+    <notify_submitted>1</notify_submitted>
+    <notify_read>$post[notify_read]</notify_read>
+    <notify_rejected>$post[notify_rejected]</notify_rejected>
+    <notify_published>$post[notify_published]</notify_published>
+    <notify_accepted>$post[notify_accepted]</notify_accepted>
+    <notify_under_consideration>$post[notify_under_consideration]</notify_under_consideration>
+    
     $categories
     $reading
     $paying
@@ -609,18 +643,16 @@ EOF;
       return $return;
   }
 
-  // Reject the submissions
-  function submission_action($id,$action) {
+  // Process the submission action with an optional message
+  function submission_action($id,$action,$message=false) {
       $return = false;
       if (!$this->submission_status[$action]) {
         $this->error = sprintf('%s is an invalid action',$action);
+        // $this->print_webservice_errors();
         return $return;
       }
-      // We'll add this in the next version
-      // $msg = get_option(HEYPUB_OPT_MSG_REJECT);
-      $msg = false;
-      if ($msg) {
-        $notify = sprintf('<notify_author><message><![CDATA[ %s  ]]></message></notify_author>', $msg);
+      if ($message) {
+        $notify = sprintf('<notify_author><message><![CDATA[%s]]></message></notify_author>', $message);
       } else {
         $notify = '<notify_author>false</notify_author>';
       }
@@ -631,6 +663,8 @@ EOF;
     $notify
 </submission>
 EOF;
+    
+    // printf("<pre>XML request to webservice = %s</pre>",htmlentities($post));
     $ret = $this->send(HEYPUB_SVC_URL_RESPOND_TO_SUBMISSION,$this->prepare_request_xml($post));
     if (FALSE == $ret) {
       $this->print_webservice_errors();
