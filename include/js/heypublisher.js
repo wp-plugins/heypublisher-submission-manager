@@ -54,3 +54,21 @@ function heypub_click_check(src,dest) {
   }
 }
 
+function heypub_toggle_tabs(on) {
+  var div = "heypub_"+on+"_info";
+  var tab = "heypub_"+on+"_tab";
+  var keys = new Array('p','c','s','n','m');
+	for (var i = 0; i < keys.length; i++) {
+    if (on != keys[i]) {
+      if ($("heypub_"+keys[i]+"_info")) {
+        $("heypub_"+keys[i]+"_info").hide();
+      }
+      if ($("heypub_"+keys[i]+"_tab")) {
+        $("heypub_"+keys[i]+"_tab").removeClassName('heypub-tab-pressed');
+      }    
+    } 
+  }
+  $(div).show();
+  $(tab).addClassName('heypub-tab-pressed');
+}
+

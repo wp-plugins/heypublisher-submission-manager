@@ -10,21 +10,33 @@ function heypub_show_menu_submissions() {
   
 }
 
-function heypub_submission_actions($nounce,$inc_cancel=false) {
+function heypub_submission_actions($nounce,$inc_cancel=false,$inc_revision=false) {
   global $hp_base;
 ?>  
-  <div class="alignleft actions">
+  <div class="actions">
   <select name="action">
     <option value="-1" selected="selected">-- Select Action --</option>
     <option value="accept">Accept Submission</option>
+<?php
+  if ($inc_cancel) {
+?>
+    <option value="request_revision">Request Author Revision</option>
+<?php
+  }
+?>
     <option value="review">Save for Later Review</option>
     <option value="reject">Reject Submission</option>
+    
+<?php   //  !!!    request_revision ?>
+
+
   </select>
-  <input type="submit" value="Apply" name="doaction" id="doaction" />
+  <br/>
+  <input type="submit" value="Update Submission" name="doaction" id="doaction" />
   <?php wp_nonce_field($nounce); ?>
 <?php
   if ($inc_cancel) {
-    printf('<br/><small>%s</small>',$hp_base->submission_summary_link());
+    printf('<div id="return_to_summary">%s</div>',$hp_base->submission_summary_link('Return to Submissions List'));
   }
 ?>
   </div>
@@ -53,7 +65,7 @@ function heypub_get_display_category($id,$default) {
 
 
 function heypub_list_submissions() {  
-  global $hp_xml;
+  global $hp_xml, $hp_base;
   // This is a SimpleXML object being returned, with key the sub-id
   $subs = $hp_xml->get_recent_submissions();
   $form_post_url = sprintf('%s/%s',get_bloginfo('wpurl'),'wp-admin/admin.php?page=heypub_show_menu_submissions');
@@ -61,24 +73,28 @@ function heypub_list_submissions() {
   
 ?>
    <div class="wrap">
-   <?php heypub_display_page_title('Submissions'); ?>
-   <div id="hey-content">
+   <h2>Submissions</h2>
+   <div id='heypub_header'>
+     <?php heypub_display_page_logo(); ?>
+     <div id="heypub_content">
+   
     <p>Below are the most recent submissions sent to <b><i><?php bloginfo('name'); ?></i></b> by HeyPublisher writers.</p>
     <p>To read the submission, click on the title.  This will open the submission in a new window.</p>
     <p>To view the author's bio, click on the author's name.  The bio will display immediately below.  Click again on the author's name to hide their bio.</p>
     <p>If you are unable to see the author's bio it means the author did not provide one when submitting their work.</p>
-    
+      </div>
+    </div>
 <form id="posts-filter" action="<?php echo $form_post_url; ?>" method="post">
 <table class="widefat post fixed" cellspacing="0" id='heypub_submissions'>
 <thead>
 	<tr>
-  	<th id='heypub_sub_cb' class='checkbox'><input type="checkbox" onclick="heypub_auto_check(this,'posts-filter');"/></th>
-  	<th>Title</th>
-  	<th>Genre</th>
-  	<th>Author</th>
-  	<th>Email</th>
-  	<th>Submission Date</th>
-  	<th>Status</th>
+  	<th style='width:4%;' id='heypub_sub_cb' class='checkbox'><input type="checkbox" onclick="heypub_auto_check(this,'posts-filter');"/></th>
+  	<th style='width:25%;'>Title</th>
+  	<th style='width:10%;'>Genre</th>
+  	<th style='width:20%;'>Author</th>
+  	<th style='width:15%;'>Email</th>
+  	<th style='width:10%;'>Submission Date</th>
+  	<th style='width:15%;'>Status</th>
 	</tr>
 </thead>
 
@@ -94,6 +110,8 @@ if(!empty($subs)) {
     // overide to highlight submissions where author has provided a rewrite
     if ($hash->status == 'writer_revision_provided') {
       $class .= ' revised';
+    } elseif  ($hash->status == 'publisher_revision_requested') {
+      $class .= ' requested';
     }
     
     $url = sprintf('%s/wp-admin/admin.php?page=heypub_show_menu_submissions&show=%s',get_bloginfo('wpurl'),"$x");
@@ -106,7 +124,7 @@ if(!empty($subs)) {
 
     <tr id='post-<?php echo "$x"; ?>' class='<?php echo $class; ?>' valign="top">
       <th scope="row"><input type="checkbox" name="post[]" id='heypub_sub_id' value="<?php echo "$x"; ?>" /></th>
-      <td class="heypub_list_title"><a href="<?php echo $url; ?>" title="Review Submission"><?php echo "$hash->title"; ?></a></td>
+      <td class="heypub_list_title"><a href="<?php echo $url; ?>" title="Review '<?php echo $hash->title; ?>'"><?php echo $hp_base->truncate($hash->title,30); ?></a></td>
       <td><?php printf("%s", heypub_get_display_category($hash->category->id,$hash->category->name)); ?></td>
       
 <?php if ($hash->author->bio != '') { ?>
@@ -126,7 +144,15 @@ if(!empty($subs)) {
         printf("<td>%s %s</td>", $hash->author->first_name, $hash->author->last_name);
       }
 ?>        
-      <td><?php printf('<a title="Email the Author"  href="mailto:%s?subject=Your%%20submission%%20to%%20%s">%s</a>',$hash->author->email,get_bloginfo('name'),$hash->author->email); ?></td>
+      <td>
+<?php 
+  if (FALSE == $hash->author->email) {
+    echo $hp_base->blank();
+  } else {
+    printf('<a title="Email the Author"  href="mailto:%s?subject=Your%%20submission%%20to%%20%s">%s</a>',$hash->author->email,get_bloginfo('name'),$hp_base->truncate($hash->author->email));
+  }
+?>
+      </td>
       <td><?php printf("%s", $hash->submission_date); ?></td>
       <td><?php printf("%s", $hp_xml->normalize_submission_status($hash->status)); ?></td>
     </tr>
@@ -158,7 +184,7 @@ if(count($subs) > 0) {
   heypub_submission_actions('heypub-bulk-submit');
 } 
 ?>
-  <br/>
+  <div style='clear:both;'></div>
   <h3>Bulk Actions Explained</h3>
   <div id='heypub_instructions'>
     <h4>You can perform the following bulk actions on the listed submissions:</h4>
@@ -199,20 +225,32 @@ function heypub_show_submission($id) {
     // printf("<pre>Sub = \n%s</pre>",print_r($sub,1));
 ?>    
   <div class="wrap">
-  <?php heypub_display_page_title(sprintf('Preview: "%s"', $sub->title),true); ?>
+  <h2>Preview: <?php echo $sub->title; ?></h2>
   <table id='heypub_summary_review'>
     <tr><td id='heypub_submission'>
       <div id="hey-content">
-      <p><b>Summary:</b><i>
-<?php
-      if ($sub->description != '') {
-        echo $sub->description;
-      } else {
-        echo "None Provided";
-      }
-?>    </i></p>
         <h3><?php printf('%s', $sub->category); ?> by <?php printf("%s %s", $sub->author->first_name, $sub->author->last_name); ?> 
-        (<?php printf('<a href="mailto:%s?subject=Your%%20submission%%20to%%20%s">%s</a>',$sub->author->email,get_bloginfo('name'),$sub->author->email); ?>)</h3>
+          <small>(
+<?php 
+    if (FALSE == $sub->author->email) {
+      print "<i><small>No Email Provided</small></i>";
+    } else { 
+      printf('<a href="mailto:%s?subject=Your%%20submission%%20to%%20%s">%s</a>',$sub->author->email,get_bloginfo('name'),$sub->author->email);
+    } 
+?>
+          )</small></h3>
+<?php
+			$block = '';
+      if ($sub->description != '') {
+				$block .= sprintf('<b>Summary:</b> %s<br/>',$sub->description);
+      } 
+      if (FALSE != $sub->word_count) {
+				$block .= sprintf('<b>Word Count:</b> %s words<br/>',number_format($sub->word_count));
+      } 
+			if ($block != '') {
+        echo $hp_base->blockquote($block);
+			}
+?>    
         <div id='heypub_submission_body'>
 <?php 
         if (in_array($sub->status,$hp_sub->disallowed_states)) {
@@ -223,14 +261,18 @@ function heypub_show_submission($id) {
         }
 ?>
         </div>
-        <h3>Author Bio</h3>
-        <div class='heypub_author_bio_show'>
-          <?php if ($sub->author->bio != '') { printf('%s',$sub->author->bio); } else { print "None provided"; } ?>
-        </div>
+<?php
+        if (FALSE != $sub->author->bio) {
+          $bio = $sub->author->bio;
+        } else {
+          $bio = 'None provided';
+        }
+        echo $hp_base->blockquote(sprintf('<b>Author Bio:</b> %s',$sub->author->bio));
+?>        
       </div>
     </td>
     <td valign='top' id='heypub_submission_nav'>
-    <?php heypub_display_page_title(false); ?>
+      <?php heypub_display_page_logo(); ?>
 
 <?php 
 /*
@@ -241,25 +283,22 @@ function heypub_show_submission($id) {
 ?>
 
       <h3>Submission Status:</h3>
-      <p><?php echo ucwords(str_replace('_',' ', $sub->status)); ?> : <small><?php echo $sub->status_date; ?></small></p>
       <p>
         <small>
+					<b><?php echo ucwords(str_replace('_',' ', $sub->status)); ?> : <?php echo $sub->status_date; ?></b><br/>
           Submitted on: <?php echo $sub->submission_date; ?><br/>
           <span class='days_pending_<?php echo $days_pending; ?>'>Days pending:  <?php echo $sub->days_pending; ?></span>
         </small>
       </p>
 <?php  if (!in_array($sub->status,$hp_sub->disallowed_states)) { ?>
       <form id="posts-filter" action="<?php echo $form_post_url; ?>" method="post">
+        <?php echo $hp_sub->editor_note_text_area($id); ?>
         <input type='hidden' name="post[]" value="<?php echo "$id"; ?>" />
-        <?php heypub_submission_actions('heypub-bulk-submit',1); ?>
+        <?php heypub_submission_actions('heypub-bulk-submit',1,1); ?>
       </form>
-      <br/>
-      <br/>
-      
 <?php
     if ($sub->manageable_count > 1) {
 ?>
-  <br/>
   <h4>Currently with <?php echo ($sub->manageable_count - 1); ?> other <?php echo (($sub->manageable_count - 1) == 1) ? 'publisher' : 'publishers'; ?>:</h4>
 <?php
   echo $hp_base->other_publisher_link($sub->manageable->publisher, $sub);
@@ -272,16 +311,12 @@ function heypub_show_submission($id) {
 <?php
     if ($sub->published_count > 0) {
 ?>
-    <br/>
     <h4>This work has been previously published by <?php echo ($sub->published_count); ?> other <?php echo (($sub->published_count) == 1) ? 'publisher' : 'publishers'; ?>:</h4>
 <?php
     echo $hp_base->other_publisher_link($sub->published->publisher,$sub);
     }
 ?>
 
-<!-- Revision Request -->
-<br/>
-<?php echo $hp_sub->revision_request_link($id); ?>
 <!-- Editor Voting -->
     <br/>
 <?php echo $hp_sub->editor_vote_box(); ?>  
@@ -348,9 +383,10 @@ function heypub_reject_submission($req) {
   global $hp_xml;
   check_admin_referer('heypub-bulk-submit');  
   $post = $req[post]; 
+  $notes = $req[notes];
   $cnt = 0;
   foreach ($post as $key) {
-    if ($hp_xml->submission_action($key,'rejected')) {
+    if ($hp_xml->submission_action($key,'rejected',$notes)) {
       $cnt++;
       // need to see if this post has been previously 'accepted'
       if ($post_id = heypub_get_post_id_by_submission_id($key)) {
@@ -368,9 +404,10 @@ function heypub_consider_submission($req) {
   global $hp_xml;
   check_admin_referer('heypub-bulk-submit');  
   $post = $req[post]; 
+  $notes = $req[notes];
   $cnt = 0;
   foreach ($post as $key) {
-    if ($hp_xml->submission_action($key,'under_consideration')) {
+    if ($hp_xml->submission_action($key,'under_consideration',$notes)) {
       $cnt++;
     }
   }
@@ -476,9 +513,10 @@ function heypub_accept_submission($req) {
   global $hp_xml;
   check_admin_referer('heypub-bulk-submit');  
   $post = $req[post]; 
+  $notes = $req[notes];
   $cnt = 0;
   foreach ($post as $id) {
-    if ($hp_xml->submission_action($id,'accepted')) {
+    if ($hp_xml->submission_action($id,'accepted',$notes)) {
       $cnt++;
       $sub = $hp_xml->get_submission_by_id($id);
       if ($sub->author) {
@@ -494,7 +532,6 @@ function heypub_accept_submission($req) {
 }
 
 // Handle operations for this form
-//
 function heypub_submission_handler() {
   global $hp_xml, $hp_sub;
   $ds = DIRECTORY_SEPARATOR;
@@ -524,8 +561,13 @@ function heypub_submission_handler() {
   elseif (isset($_REQUEST[action]) && ($_REQUEST[action] == 'request_revision')) {
     $message = heypub_request_revision($_REQUEST);
   }
-  
-
+  elseif (isset($_REQUEST[action])) {
+    $hp_xml->error = "Oops - looks like you didn't select an action from the dropdown.";
+    if ($_REQUEST[notes] != '') {
+      $hp_xml->error .= '<br/>Your note to the author was not sent.';
+    }
+    $hp_xml->print_webservice_errors(false);
+  }
 
   if(!empty($message)) { ?>
     <div id="message" class="updated fade"><p><?php echo $message; ?></p></div>
