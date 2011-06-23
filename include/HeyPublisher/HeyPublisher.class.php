@@ -4,7 +4,8 @@
 *
 */
 class HeyPublisher {
-
+  var $my_categories = array();
+  
   public function __construct() {
 
   }   
@@ -150,6 +151,15 @@ EOF;
 EOF;
     return $str;
   }
+
+  public function make_license_link() {
+    global $hp_xml;
+    $url = sprintf('%s/%s',HEYPUB_LICENSE_URL,$hp_xml->get_install_option('publisher_oid'));
+    $format = "<a href='%s' target='_blank' title='See the Additional Features Available when you License this Plugin' class='heypub_smart_button green'>License Plugin</a>";
+    $str = sprintf($format,$url);
+    return $str;
+  }
+
     
   public function make_donation_link($text_only=false) {
     $format = "<a href='".HEYPUB_DONATE_URL."' target='_blank' title='Thank You for Donating to HeyPublisher'>%s</a>";
@@ -167,8 +177,8 @@ EOF;
   }
   
   public function get_yes_no_checkbox($label,$key,$val,$alt=false) {
-    $no = ($val == '0') ? 'selected=selected' : null;
-    $yes = ($val == '1') ? 'selected=selected' : null;
+    $no = ($val == '0' || $val == FALSE) ? 'selected=selected' : null;
+    $yes = ($val == '1' || $val == TRUE) ? 'selected=selected' : null;
     $str = <<<EOF
 <label class='heypub' for='hp_$key'>$label</label>
 <select name="heypub_opt[$key]" id="hp_$key">
@@ -179,4 +189,35 @@ EOF;
 EOF;
     return $str;
   }
+  
+  public function truncate($string, $limit=15) {
+    $break=" "; 
+    $pad="...";
+    // return with no change if string is shorter than $limit  
+    if(strlen($string) <= $limit) return $string; 
+    $string = substr($string, 0, $limit); 
+    if(false !== ($breakpoint = strrpos($string, $break))) { 
+      $string = substr($string, 0, $breakpoint); 
+    } 
+    return $string . $pad; 
+  }
+  
+  public function blank($str='Not Provided') {
+   $ret = sprintf('<span class="heypub_empty">%s</span>',$str);
+   return $ret;  
+  }
+  
+  public function tabbed_nav($key,$label) {
+    $class = '';
+    if ($key == 'p') { // Initializer
+      $class = 'heypub-tab-pressed';
+    }
+    $ret = sprintf("<a href='#' class='heypub-tab %s' id='heypub_%s_tab' onclick='heypub_toggle_tabs(\"%s\");return false;'>%s</a>", $class,$key,$key,$label);
+    return $ret;
+  }
+  public function blockquote($content){
+    $ret = sprintf("<blockquote class='heypub_summary'>%s</blockquote>",$content);
+    return $ret;
+  }
+  
 }
