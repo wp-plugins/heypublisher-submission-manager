@@ -67,9 +67,7 @@ define("HEYPUB_PLUGIN_BUILD_DATE", "2010-11-01");
 define("HEYPUB_PLUGIN_VERSION", "1.4.0");
 
 # Base domain 
-// define('HEYPUB_DOMAIN','http://heypublisher.com');    
-# Base domain for testing
-define('HEYPUB_DOMAIN','http://heypub.test');
+define('HEYPUB_DOMAIN','http://heypublisher.com');    
 
 define('HEYPUB_PLUGIN_ERROR_CONTACT','Please contact <a href="mailto:support@heypublisher.com?subject=plugin%20error">support@heypublisher.com</a> to report this error');
 
