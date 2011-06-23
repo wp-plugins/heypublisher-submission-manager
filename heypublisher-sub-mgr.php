@@ -2,15 +2,14 @@
 /*
 Plugin Name: HeyPublisher Submission Manager
 Plugin URI: http://loudlever.com
-Description: This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.  You can define reading periods, acceptable genres, and other filters to ensure you only receive the submissions that meet your publication's needs.
-Version: 1.3.0
+Description: This plugin allows you as a publisher or blog owner to accept unsolicited submissions from writers without having to create an account for them.  You can define acceptable categories and other filters to ensure you only receive the submissions that meet your publication's needs.
+Version: 1.4.0
 Author: Loudlever, Inc.
 Author URI: http://www.loudlever.com
 
-
   $Id: heypublisher-sub-mgr.php 145 2010-12-16 22:20:13Z rluck $
 
-  Copyright 2010 Loudlever, Inc. (wordpress@loudlever.com)
+  Copyright 2010-2011 Loudlever, Inc. (wordpress@loudlever.com)
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -62,19 +61,20 @@ define('HEY_DIR', dirname(plugin_basename(__FILE__)));
 // Configs specific to the plugin
 // Build Number (must be a integer)
 define('HEY_BASE_URL', get_option('siteurl').'/wp-content/plugins/'.HEY_DIR.'/');
-define("HEYPUB_PLUGIN_BUILD_NUMBER", "40");  // This controls whether or not we get upgrade prompt
+define("HEYPUB_PLUGIN_BUILD_NUMBER", "45");  // This controls whether or not we get upgrade prompt
 define("HEYPUB_PLUGIN_BUILD_DATE", "2010-11-01");  
 // Version Number (can be text)
-define("HEYPUB_PLUGIN_VERSION", "1.3.0");
+define("HEYPUB_PLUGIN_VERSION", "1.4.0");
 
 # Base domain 
-define('HEYPUB_DOMAIN','http://heypublisher.com');    
+// define('HEYPUB_DOMAIN','http://heypublisher.com');    
 # Base domain for testing
-// define('HEYPUB_DOMAIN','http://localhost:3000');
+define('HEYPUB_DOMAIN','http://heypub.test');
 
-define('HEYPUB_PLUGIN_ERROR_CONTACT','Please contact <a href="mailto:wordpress@loudlever.com?subject=plugin%20error">wordpress@loudlever.com</a> to report this error');
+define('HEYPUB_PLUGIN_ERROR_CONTACT','Please contact <a href="mailto:support@heypublisher.com?subject=plugin%20error">support@heypublisher.com</a> to report this error');
 
 define('HEYPUB_DONATE_URL','https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6XSRBYF4B3RH6');
+define('HEYPUB_LICENSE_URL',sprintf('%s/license',HEYPUB_DOMAIN));
 
 // which method handles the not-authenticated condition?
 define('HEYPUB_PLUGIN_NOT_AUTHENTICATED_ACTION','heypub_show_menu_options');
@@ -82,9 +82,9 @@ define('HEYPUB_PLUGIN_NOT_AUTHENTICATED_ACTION','heypub_show_menu_options');
 define('HEYPUB_PLUGIN_FULLPATH', WP_PLUGIN_DIR.DIRECTORY_SEPARATOR.HEY_DIR.DIRECTORY_SEPARATOR);
 
 // How to connect to the service
-define('HEYPUB_FEEDBACK_EMAIL_VALUE','wordpress@loudlever.com?subject=HeyPublisher%20Wordpress%20Plugin');
+define('HEYPUB_FEEDBACK_EMAIL_VALUE','support@heypublisher.com?subject=HeyPublisher%20Wordpress%20Plugin');
 define('HEYPUB_FEEDBACK_GETSATISFACTION','http://getsatisfaction.com/hey');
-define('HEYPUB_SVC_URL_STYLE_GUIDE','http://www.loudlever.com/docs/plugins/wordpress/style_guide');     # designates the URL of the style guide
+define('HEYPUB_SVC_URL_STYLE_GUIDE','http://blog.heypublisher.com/docs/plugins/wordpress/style_guide/');     # designates the URL of the style guide
 define('HEYPUB_SVC_URL_BASE', HEYPUB_DOMAIN . '/api/v1');                 # designates the base URL and version of API
 # Stylesheet for plugin resides on HP server now
 define('HEYPUB_SVC_STYLESHEET_URL',HEYPUB_DOMAIN . '/stylesheets/wordpress/plugin.css?R11.1');
@@ -144,6 +144,8 @@ require_once(HEYPUB_PLUGIN_FULLPATH.'admin'.DIRECTORY_SEPARATOR.'heypub-uninstal
 
 // required for managing submissions
 require_once(HEYPUB_PLUGIN_FULLPATH.'admin'.DIRECTORY_SEPARATOR.'heypub-submissions.php');
+// marketplace coming soon!
+// require_once(HEYPUB_PLUGIN_FULLPATH.'admin'.DIRECTORY_SEPARATOR.'heypub-marketplace.php');
 
 
 // Initiate the callbacks
@@ -199,6 +201,11 @@ function RegisterHeyPublisherAdminMenu(){
       $admin_sub = add_submenu_page(HEY_DIR , 'HeyPublisher Submissions', 'Submissions'.$countHTML, 'edit_others_posts', 'heypub_show_menu_submissions', 'heypub_show_menu_submissions');
       add_action("admin_print_styles-$admin_sub", 'HeyPublisherAdminHeader' );
       add_action("admin_print_scripts-$admin_sub", 'HeyPublisherAdminInit');
+
+      // $mkt_sub = add_submenu_page(HEY_DIR , 'HeyPublisher Marketplace', 'Marketplace'.$countHTML, 'edit_others_posts', 'heypub_show_menu_marketplace', 'heypub_show_menu_marketplace');
+      // add_action("admin_print_styles-$mkt_sub", 'HeyPublisherAdminHeader' );
+      // add_action("admin_print_scripts-$mkt_sub", 'HeyPublisherAdminInit');
+
   }
     // Configure Options
     $admin_opts = add_submenu_page( HEY_DIR , 'Configure HeyPublisher', 'Plugin Options', 'manage_options', 'heypub_show_menu_options', 'heypub_show_menu_options');
@@ -207,7 +214,7 @@ function RegisterHeyPublisherAdminMenu(){
 
     if ($hp_xml->is_validated) {
       // Response Templates
-      $admin_temps = add_submenu_page( HEY_DIR , 'HeyPublisher Response Templates', 'Response Templates', 'manage_options', 'heypub_response_templates', 'heypub_response_templates');
+      $admin_temps = add_submenu_page( HEY_DIR , 'HeyPublisher Email Templates', 'Email Templates', 'manage_options', 'heypub_response_templates', 'heypub_response_templates');
       add_action("admin_print_styles-$admin_temps", 'HeyPublisherAdminHeader' );
       add_action("admin_print_scripts-$admin_temps", 'HeyPublisherAdminInit');
     }
@@ -224,7 +231,9 @@ function HeyPublisherAdminHeader() {
 <?php  
 }
 function HeyPublisherAdminInit() {
-  wp_enqueue_script('heypublisher', WP_PLUGIN_URL . '/heypublisher-submission-manager/include/js/heypublisher.js',array('prototype')); 
+	$parts = array(WP_PLUGIN_URL,HEY_DIR,'include','js','heypublisher.js');
+	$url = implode(DIRECTORY_SEPARATOR,$parts);
+  wp_enqueue_script('heypublisher', $url, array('prototype')); 
 }
 
 /*
@@ -310,53 +319,48 @@ function heypub_init(){
     delete_option('_heypub_opt_submission_guide_id');
     delete_option('_heypub_opt_sub_guide_url');
     $hp_xml->set_is_validated();
-  } elseif (get_option(HEYPUB_PLUGIN_OPT_INSTALL) == false) {
-    // this user has not installed the plugin yet - this is a fresh install
+  } 
+  elseif (get_option(HEYPUB_PLUGIN_OPT_INSTALL) == false) {
+    // NEW Install Path
     $hp_xml->initialize_plugin();
-    // this will be needed later
+    if (function_exists('get_bloginfo')) {
+      $hp_xml->set_config_option('name',get_bloginfo('name'));
+      $hp_xml->set_config_option('url',get_bloginfo('url'));
+      $hp_xml->set_config_option('editor_email',get_bloginfo('admin_email'));
+      if (function_exists('get_feed_permastruct')) {
+        $hp_xml->set_config_option('rss',get_bloginfo('rss2_url'));
+      }
+    }
     $hp_xml->set_install_option('version_current_date',null);
-    
-    // $hp_xml->set_config_option('name',get_bloginfo('name'));
-    // $hp_xml->set_config_option('url',get_bloginfo('url'));
     $hp_xml->set_config_option('editor_name','Editor');
-    // $hp_xml->set_config_option('editor_email',get_bloginfo('admin_email'));
-    $hp_xml->set_config_option('accepting_subs','0');
-    $hp_xml->set_config_option('reading_period','0');
-    $hp_xml->set_config_option('simu_subs','0');
-    $hp_xml->set_config_option('multi_subs','0');
-    $hp_xml->set_config_option('paying_market','0');
-    $hp_xml->set_config_option('address',false);
-    $hp_xml->set_config_option('city',false);
-    $hp_xml->set_config_option('state',false);
-    $hp_xml->set_config_option('zipcode',false);
-    $hp_xml->set_config_option('country',false);
-    $hp_xml->set_config_option('sub_page_id',false);
-    $hp_xml->set_config_option('sub_guide_id',false);
-    // added with 1.3.0
-    $hp_xml->set_config_option('reprint_subs','0');
-    // $hp_xml->set_config_option('rss',get_bloginfo('rss2_url'));
-    $hp_xml->set_config_option('notify_submitted',true);
-    $hp_xml->set_config_option('notify_read',true);
-    $hp_xml->set_config_option('notify_rejected',true);
-    $hp_xml->set_config_option('notify_published',true);
-    $hp_xml->set_config_option('notify_accepted',true);
-    $hp_xml->set_config_option('notify_under_consideration',true);
   } 
   
   // now check for a normal upgrade path
   $opts = $hp_xml->install;
   if ($opts['version_current'] != HEYPUB_PLUGIN_BUILD_NUMBER) {
     // this is the 'normal' upgrade path.
-    if ($opts['version_current'] <= 40) {  // upgrade to 1.3.0 options
-      $hp_xml->set_config_option('notify_submitted',true);
-      $hp_xml->set_config_option('notify_read',true);
-      $hp_xml->set_config_option('notify_rejected',true);
-      $hp_xml->set_config_option('notify_published',true);
-      $hp_xml->set_config_option('notify_accepted',true);
-      $hp_xml->set_config_option('notify_under_consideration',true);
+    if ($opts['version_current'] < 40) {  // upgrade to 1.3.0 options
+      $hp_xml->set_config_option('notify_submitted','1');
+      $hp_xml->set_config_option('notify_read','1');
+      $hp_xml->set_config_option('notify_rejected','1');
+      $hp_xml->set_config_option('notify_published','1');
+      $hp_xml->set_config_option('notify_accepted','1');
+      $hp_xml->set_config_option('notify_under_consideration','1');
       $hp_xml->set_config_option('reprint_subs','0');
-      // $hp_xml->set_config_option('rss',get_bloginfo('rss2_url'));
+      if (function_exists('get_bloginfo')) {
+        // for feed info, also need to test for 'get_feed_permastruct()')
+        if (function_exists('get_feed_permastruct')) {
+          $hp_xml->set_config_option('rss',get_bloginfo('rss2_url'));
+        }
+      }
     }
+    // not all of our 1.3.1 version users have the bloginfo for rss set, upgrade them
+    if ($opts['version_current'] < 42) {  // upgrade to 1.3.2 options
+      if (function_exists('get_bloginfo') && function_exists('get_feed_permastruct')) {
+          $hp_xml->set_config_option('rss',get_bloginfo('rss2_url'));
+      }
+    }
+    
     // For future reference, just keep adding new hash keys that are version specific by following same logic
     // if ($opts['version_current'] < 50) {  // upgrade to 1.4.0 options
     //    ... do something here  

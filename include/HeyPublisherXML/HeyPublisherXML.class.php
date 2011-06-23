@@ -98,11 +98,11 @@ class HeyPublisherXML {
       'established' => null,
       'editor_name' => null,
       'editor_email' => null,
-      'accepting_subs' => false,
+      'accepting_subs' => true,
       'reading_period' => null,
-      'simu_subs' => false,
-      'multi_subs' => false,
-      'reprint_subs' => false,
+      'simu_subs' => true,
+      'multi_subs' => true,
+      'reprint_subs' => true,
       'paying_market' => false,
       'paying_market_range' => null,
       'address' => null,
@@ -212,7 +212,9 @@ class HeyPublisherXML {
       'publishername' => $this->get_config_option('name'),
       'url'           => $this->get_config_option('url'),
       'email'         => $user['username'],
-      'password'      => $user['password']);
+      'password'      => $user['password'],
+      'version'       => $this->get_install_option('version_current')
+      );
 
     $xml_parts = '';
     foreach($xml_ops as $key=>$val) {
@@ -284,7 +286,7 @@ class HeyPublisherXML {
   function update_publisher_paying_market($post) {
     $bool = $this->boolean($post[paying_market]);
     if ($post[paying_market]) {
-      $val = $post[paying_market_range];
+      $val = htmlentities(stripslashes($post[paying_market_range]));
       $ret = "<paying_market><paying_market_amount>$val</paying_market_amount></paying_market>";
     } else {
       $ret = "<paying_market>$bool</paying_market>";
@@ -327,28 +329,41 @@ EOF;
     $reprints = $this->boolean($post[reprint_subs]);
     $accepting_subs  = $this->boolean($post[accepting_subs]);
     $paying = $this->update_publisher_paying_market($post);
+    $name = htmlentities(stripslashes($post[name]));
+    $established = htmlentities(stripslashes($post[established]));
+    $editor = htmlentities(stripslashes($post[editor_name]));
+    $editor_email = htmlentities(stripslashes($post[editor_email]));
+    $address = htmlentities(stripslashes($post[address]));
+    $city = htmlentities(stripslashes($post[city]));
+    $state = htmlentities(stripslashes($post[state]));
+    $zipcode = htmlentities(stripslashes($post[zipcode]));
+    $country = htmlentities(stripslashes($post[country]));
+    $twitter = htmlentities(stripslashes($post[twitter]));
+    $facebook = htmlentities(stripslashes($post[facebook]));
+    $url = htmlentities(stripslashes($post[url]));
+
     $post = <<<EOF
 <publisher>
     <oid>$this->pub_oid</oid>
     <publishertype_id>$post[pub_type]</publishertype_id>
-    <name>$post[name]</name>
-    <url>$post[url]</url>
-    <established>$post[established]</established>
+    <name>$name</name>
+    <url>$url</url>
+    <established>$established</established>
     <circulation>$post[circulation]</circulation>
     <sub_guideline>$post[guide]</sub_guideline>
-    <editor>$post[editor_name]</editor>
-    <editor_email>$post[editor_email]</editor_email>
+    <editor>$editor</editor>
+    <editor_email>$editor_email</editor_email>
     <accepts_simultaneous_submissions>$simulsubs</accepts_simultaneous_submissions>
     <accepts_multiple_submissions>$multisubs</accepts_multiple_submissions>
     <accepts_reprints>$reprints</accepts_reprints>
     <now_accepting_submissions>$accepting_subs</now_accepting_submissions>
-    <address>$post[address]</address>
-    <city>$post[city]</city>
-    <state>$post[state]</state>
-    <zipcode>$post[zipcode]</zipcode>
-    <country>$post[country]</country>
-    <twitter>$post[twitter]</twitter>
-    <facebook>$post[facebook]</facebook>
+    <address>$address</address>
+    <city>$city</city>
+    <state>$state</state>
+    <zipcode>$zipcode</zipcode>
+    <country>$country</country>
+    <twitter>$twitter</twitter>
+    <facebook>$facebook</facebook>
     <submission_url>$post[submission_url]</submission_url>
     <submission_product>HeyPublisher</submission_product>
     <platform>wordpress</platform>
@@ -513,12 +528,18 @@ EOF;
   }
 
 
-  function print_webservice_errors() {
+  function print_webservice_errors($show_contact=true) {
 ?>
-    <div id='heypub_error'>
+    <div id='heypub_error' class='flash error'>
       <h2>Error Encountered</h2>
       <p><?php echo $this->error; ?></p>
+<?php      
+    if ($show_contact) {
+?>      
       <p><b><?php echo HEYPUB_PLUGIN_ERROR_CONTACT; ?></b></p>
+<?php
+    }
+?>    
     </div>
 <?php
   }
@@ -638,7 +659,9 @@ EOF;
           $this->print_webservice_errors();
         }
       }
-      ksort($return);
+      if (FALSE != $return) {
+        ksort($return);
+      }
       // printf("<pre>Hash = %s</pre>",print_r($return,1));
       return $return;
   }
@@ -652,7 +675,7 @@ EOF;
         return $return;
       }
       if ($message) {
-        $notify = sprintf('<notify_author><message><![CDATA[%s]]></message></notify_author>', $message);
+        $notify = sprintf('<notify_author><message><![CDATA[%s]]></message></notify_author>', htmlentities(stripslashes($message)));
       } else {
         $notify = '<notify_author>false</notify_author>';
       }
