@@ -21,7 +21,7 @@ function heypub_show_menu_options() {
   if (!$hp_xml->is_validated) {
 ?>
     <h3>HeyPublisher Account Info</h3>
-    <p>If your publication is <a href="<?php echo HEYPUB_DOMAIN; ?>/publishers/search/all/none/<?php printf('%s',urlencode($opts['name'])); ?>" target=_new>listed in HeyPublisher's database</a>, please enter your publication's name and URL below <i>exactly</i> as it appears on HeyPublisher.</p>
+    <p>If your publication is <a href="<?php echo HEYPUB_DOMAIN; ?>/publishers/search/all/none/<?php printf('%s',$hp_xml->searchable($opts['name'])); ?>" target=_new>listed in HeyPublisher's database</a>, please enter your publication's name and URL below <i>exactly</i> as it appears on HeyPublisher.</p>
     <p>If your publication is not already in our database, tell us the name and URL of your publication (the defaults listed below are based upon your Wordpress settings).</p>
     <p><p><b>IMPORTANT:</b> Please provide an email address and desired password below.  We will use this information to create an 'administrator' account in our system, allowing you to manage your publication's listing from the <a href='http://heypublisher.com/'  target='_new'>HeyPublisher.com website</a>, as well as from this plugin.</p>
     
@@ -78,7 +78,7 @@ function heypub_show_menu_options() {
     </select>
   <br/>
     <label class='heypub' for='hp_name'>Publication Name</label>
-    <input type="text" name="heypub_opt[name]" id="hp_name" class='heypub' value="<?php echo stripslashes($opts['name']); ?>" />
+    <input type="text" name="heypub_opt[name]" id="hp_name" class='heypub' value="<?php echo htmlentities(stripslashes($opts['name'])); ?>" />
   <br/>
     <label class='heypub' for='hp_url'>Publication URL</label>
     <input type="text" name="heypub_opt[url]" id="hp_url" class='heypub' value="<?php echo stripslashes($opts['url']); ?>" />
@@ -264,8 +264,7 @@ function heypub_show_menu_options() {
 
 <!-- Notification Options -->
 <div id='heypub_n_info' style='display:none;'>
-
-      <h3>Notification Options</h3>
+      <h3>Author Notification Options</h3>
       <p>By default, this plugin will send an email to the author when their submission transitions through each of the <a href='http://blog.heypublisher.com/docs/plugins/wordpress/submission-states/' target='_blank'>states in the submission cycle</a>.</p>
 <p>If you want to supress sending any of these notifications, indicate so below by setting the value to 'No'.</p>
 <p>Additionally, you can customize the emails sent to the author via the <a href='admin.php?page=heypub_response_templates' target=_top>Response Templates</a> screen.</p>
@@ -275,11 +274,12 @@ function heypub_show_menu_options() {
     // <br clear='both'>
       // <?php echo $hp_base->get_yes_no_checkbox('Submitted?','notify_submitted',$opts['notify_submitted'],'Sent when the writer first submits their work for consideration.'); 
 ?>
+    
+    <br clear='both'>
     <input type='hidden' name='notify_submitted' value='1'>
+      <?php echo $hp_base->get_yes_no_checkbox('Read?','notify_read',$opts['notify_read'],'Sent when the submission is first read by an Editor.'); ?>
     <br clear='both'>
-      <?php echo $hp_base->get_yes_no_checkbox('Read?','notify_read',$opts['notify_read'],'Sent when the submission is first reviewed by an Editor.'); ?>
-    <br clear='both'>
-      <?php echo $hp_base->get_yes_no_checkbox('Under Review?','notify_under_consideration',$opts['notify_under_consideration'],'Sent when the submission is saved for Later Review.'); ?>
+      <?php echo $hp_base->get_yes_no_checkbox('Under Review?','notify_under_consideration',$opts['notify_under_consideration'],'Sent when the submission is being held for consideration.'); ?>
     <br clear='both'>
       <?php echo $hp_base->get_yes_no_checkbox('Accepted?','notify_accepted',$opts['notify_accepted'],'Sent if the submission is Accepted for publication.');?>
     <br clear='both'>

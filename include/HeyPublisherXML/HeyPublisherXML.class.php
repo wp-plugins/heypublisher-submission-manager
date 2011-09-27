@@ -46,6 +46,18 @@ class HeyPublisherXML {
     }
   }
   
+  protected function clean_local_vars($array) {
+    $tmp = array();
+    foreach ($array as $key=>$val) {
+      if (is_scalar($val)) {
+        $tmp[$key] = htmlentities(stripslashes($val));
+      } else {
+        $tmp[$key] = $val;
+      }
+    }
+    return $tmp;
+  }
+  
   public function get_category_mapping() {
     if ($this->config[categories]) {
       return $this->config[categories];
@@ -209,10 +221,11 @@ class HeyPublisherXML {
     // authentication is based upon username, password, and token
     $xml_ops = array(
       'token'         => HEYPUB_SVC_TOKEN_VALUE,
-      'publishername' => $this->get_config_option('name'),
-      'url'           => $this->get_config_option('url'),
-      'email'         => $user['username'],
-      'password'      => $user['password'],
+      # no htmlentities here, otherwise " becomes %quote; and cronks the seo name
+      'publishername' => stripslashes($this->get_config_option('name')),     
+      'url'           => htmlentities(stripslashes($this->get_config_option('url'))),
+      'email'         => htmlentities(stripslashes($user['username'])),
+      'password'      => htmlentities(stripslashes($user['password'])),
       'version'       => $this->get_install_option('version_current')
       );
 
@@ -329,7 +342,8 @@ EOF;
     $reprints = $this->boolean($post[reprint_subs]);
     $accepting_subs  = $this->boolean($post[accepting_subs]);
     $paying = $this->update_publisher_paying_market($post);
-    $name = htmlentities(stripslashes($post[name]));
+    # no htmlentities here, otherwise " becomes %quote; and cronks the seo name
+    $name = stripslashes($post[name]);
     $established = htmlentities(stripslashes($post[established]));
     $editor = htmlentities(stripslashes($post[editor_name]));
     $editor_email = htmlentities(stripslashes($post[editor_email]));
@@ -713,5 +727,13 @@ EOF;
       }
       return $return;
   }
+  
+  // Get a publisher name into the format expected by HeyPub search
+  public function searchable($string) {
+    $string = preg_replace('/[^0-9a-zA-Z\s]+/','',html_entity_decode($string,ENT_QUOTES));
+    $string = preg_replace('/ /','+',$string);
+    return $string;
+  }
+  
 }
 ?>
